@@ -5,7 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#07070d">
 <title>RAHAKONE</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💸</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%237c5cbf'/><stop offset='100%25' stop-color='%2300c8f0'/></linearGradient></defs><rect width='100' height='100' rx='22' fill='%2307070d'/><rect x='18' y='38' width='64' height='38' rx='7' fill='none' stroke='url(%23g)' stroke-width='5'/><rect x='18' y='44' width='64' height='10' fill='url(%23g)' opacity='.35'/><circle cx='34' cy='57' r='5' fill='url(%23g)'/><rect x='44' y='53' width='22' height='4' rx='2' fill='url(%23g)' opacity='.6'/><path d='M62 38 L62 28 Q62 20 70 20 L82 20' stroke='url(%23g)' stroke-width='4' fill='none' stroke-linecap='round'/><circle cx='82' cy='20' r='5' fill='%2300c8f0'/></svg>">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Rahakone">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%237c5cbf'/><stop offset='100%25' stop-color='%2300c8f0'/></linearGradient></defs><rect width='180' height='180' rx='40' fill='%2307070d'/><rect x='32' y='68' width='116' height='68' rx='12' fill='none' stroke='url(%23g)' stroke-width='8'/><rect x='32' y='80' width='116' height='18' fill='url(%23g)' opacity='.3'/><circle cx='60' cy='102' r='9' fill='url(%23g)'/><rect x='78' y='96' width='40' height='7' rx='3.5' fill='url(%23g)' opacity='.55'/><path d='M110 68 L110 50 Q110 36 124 36 L148 36' stroke='url(%23g)' stroke-width='7' fill='none' stroke-linecap='round'/><circle cx='148' cy='36' r='9' fill='%2300c8f0'/></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -297,7 +301,7 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
 <!-- ======= MENOT ======= -->
 <div id="tab-menot" class="tab">
   <div class="sec-title">Kiinteät arjen menot</div>
-  <div class="tip" style="margin-bottom:12px">Merkitse meno maksetuksi "Maksa nyt" -painikkeella — summa vähennetään saldostasi automaattisesti.</div>
+  <div class="tip" style="margin-bottom:12px">Kun maksat menon, valitse maksoitko <strong>tililtä</strong> vai <strong>käteisellä</strong> — summa vähennetään automaattisesti oikeasta saldosta. Peruuta-nappi palauttaa sen takaisin.</div>
   <div id="menotList"></div>
   <button class="btn mt12" onclick="addExpense('arki')">+ Lisää meno</button>
   <hr class="div">
@@ -466,20 +470,20 @@ const DEF={
     {id:'i2',label:'Lapsilisä',amount:0,day:26,recurring:true,paid:false},
   ],
   expenses:[
-    {id:'e1',label:'Vuokra',amount:0,day:1,paid:false},
-    {id:'e2',label:'Sähkönsiirto',amount:0,day:5,paid:false},
-    {id:'e3',label:'Sähkö (kulutus)',amount:0,day:5,paid:false},
-    {id:'e4',label:'Kotivakuutus',amount:0,day:1,paid:false},
-    {id:'e5',label:'Puhelin/tietoliikenne',amount:0,day:10,paid:false},
-    {id:'e6',label:'Salikortti',amount:0,day:1,paid:false},
-    {id:'e7',label:'Junaliput',amount:0,day:0,paid:false},
-    {id:'e8',label:'Luottokortti/lainat',amount:0,day:15,paid:false},
+    {id:'e1',label:'Vuokra',amount:0,day:1,paid:false,paidFrom:null},
+    {id:'e2',label:'Sähkönsiirto',amount:0,day:5,paid:false,paidFrom:null},
+    {id:'e3',label:'Sähkö (kulutus)',amount:0,day:5,paid:false,paidFrom:null},
+    {id:'e4',label:'Kotivakuutus',amount:0,day:1,paid:false,paidFrom:null},
+    {id:'e5',label:'Puhelin/tietoliikenne',amount:0,day:10,paid:false,paidFrom:null},
+    {id:'e6',label:'Salikortti',amount:0,day:1,paid:false,paidFrom:null},
+    {id:'e7',label:'Junaliput',amount:0,day:0,paid:false,paidFrom:null},
+    {id:'e8',label:'Luottokortti/lainat',amount:0,day:15,paid:false,paidFrom:null},
   ],
   yritys:[
-    {id:'y1',label:'Nettisivut/hosting',amount:0,day:1,paid:false},
-    {id:'y2',label:'Palvelinmaksut',amount:0,day:1,paid:false},
-    {id:'y3',label:'Verkkokauppamaksut',amount:0,day:1,paid:false},
-    {id:'y4',label:'Kirjanpito',amount:0,day:1,paid:false},
+    {id:'y1',label:'Nettisivut/hosting',amount:0,day:1,paid:false,paidFrom:null},
+    {id:'y2',label:'Palvelinmaksut',amount:0,day:1,paid:false,paidFrom:null},
+    {id:'y3',label:'Verkkokauppamaksut',amount:0,day:1,paid:false,paidFrom:null},
+    {id:'y4',label:'Kirjanpito',amount:0,day:1,paid:false,paidFrom:null},
   ],
   alloc:[
     {id:'a1',label:'Hyväntekeväisyys',pct:5},
@@ -492,9 +496,11 @@ const DEF={
 };
 let S=JSON.parse(JSON.stringify(DEF));
 
-function save(){
-  S.saldoTili=parseFloat(document.getElementById('saldoTili')?.value)||0;
-  S.saldoKateis=parseFloat(document.getElementById('saldoKateis')?.value)||0;
+function save(skipDom){
+  if(!skipDom){
+    S.saldoTili=parseFloat(document.getElementById('saldoTili')?.value)||0;
+    S.saldoKateis=parseFloat(document.getElementById('saldoKateis')?.value)||0;
+  }
   try{localStorage.setItem('rahakone_v4',JSON.stringify(S));}catch(e){}
 }
 function load(){
@@ -522,22 +528,34 @@ function esc(s){return(s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
 function fmt(n){return n.toFixed(2)+' €';}
 
 // ===== PAY EXPENSE =====
-// Mark expense as paid and deduct from saldo tili
-function payExpense(type,idx){
+function payExpense(type,idx,method){
   const arr=type==='arki'?S.expenses:S.yritys;
   const item=arr[idx];
-  if(item.paid){
-    // Undo payment — add back to tili
-    S.saldoTili=Math.round((S.saldoTili+(item.amount||0))*100)/100;
+  const amt=Math.round((item.amount||0)*100)/100;
+  if(method==='undo'){
+    // Restore to whichever account it was paid from
+    if(item.paidFrom==='kateis'){
+      S.saldoKateis=Math.round((S.saldoKateis+amt)*100)/100;
+    } else {
+      S.saldoTili=Math.round((S.saldoTili+amt)*100)/100;
+    }
     item.paid=false;
+    item.paidFrom=null;
   } else {
-    // Pay — deduct from tili
-    S.saldoTili=Math.round((S.saldoTili-(item.amount||0))*100)/100;
     item.paid=true;
+    item.paidFrom=method;
+    if(method==='kateis'){
+      S.saldoKateis=Math.round((S.saldoKateis-amt)*100)/100;
+    } else {
+      S.saldoTili=Math.round((S.saldoTili-amt)*100)/100;
+    }
   }
-  save();
-  // Update saldo input
-  document.getElementById('saldoTili').value=S.saldoTili||'';
+  save(true); // skipDom=true, don't overwrite our changes from DOM
+  // Sync DOM
+  const tiEl=document.getElementById('saldoTili');
+  if(tiEl) tiEl.value=S.saldoTili!==0?S.saldoTili:'';
+  const kaEl=document.getElementById('saldoKateis');
+  if(kaEl) kaEl.value=S.saldoKateis!==0?S.saldoKateis:'';
   renderAll();
 }
 
@@ -588,33 +606,45 @@ function addIncome(){
 
 // ===== RENDER EXPENSES =====
 function renderExpenseList(listId,arr,type){
-  const el=document.getElementById(listId);el.innerHTML='';
+  const el=document.getElementById(listId);if(!el)return;el.innerHTML='';
   arr.forEach((item,idx)=>{
     const div=document.createElement('div');
     div.className='exp-row'+(item.paid?' is-paid':'');
-    const dayStr=item.day>0?`${item.day}. pv`:'—';
     div.innerHTML=`
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
         <input type="text" value="${esc(item.label)}" placeholder="Meno"
-          style="font-size:13px;font-weight:${item.paid?'300':'500'};padding:0;flex:1;min-width:90px;border-bottom:1px solid var(--border);color:var(--text-1);text-decoration:${item.paid?'line-through':''};opacity:${item.paid?'0.5':'1'}"
+          style="font-size:13px;font-weight:${item.paid?'300':'500'};padding:0;flex:1;min-width:90px;
+          border-bottom:1px solid var(--border);color:var(--text-1);
+          text-decoration:${item.paid?'line-through':''};opacity:${item.paid?'0.5':'1'}"
           onchange="${type==='arki'?'S.expenses':'S.yritys'}[${idx}].label=this.value;save()">
         <div style="display:flex;align-items:center;gap:5px">
           <input type="number" value="${item.amount||''}" placeholder="0"
-            style="width:80px;text-align:right;font-size:1rem;color:${item.paid?'var(--text-3)':'var(--red)'};padding:0"
+            style="width:80px;text-align:right;font-size:1rem;
+            color:${item.paid?'var(--text-3)':'var(--red)'};padding:0"
             oninput="${type==='arki'?'S.expenses':'S.yritys'}[${idx}].amount=parseFloat(this.value)||0;save();update()">
           <span style="color:var(--text-3);font-size:0.85rem">€</span>
           <button class="btn-del" onclick="${type==='arki'?'S.expenses':'S.yritys'}.splice(${idx},1);save();renderAll()">✕</button>
         </div>
       </div>
-      <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:7px">
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:7px">
         <span style="font-size:9px;color:var(--text-3)">Eräpäivä:</span>
-        <input type="number" value="${item.day||0}" min="0" max="31" placeholder="0=jatkuva"
-          style="width:44px;font-size:11px;padding:2px 5px;background:rgba(255,255,255,0.06);border-radius:5px;text-align:center"
+        <input type="number" value="${item.day||0}" min="0" max="31" placeholder="0"
+          style="width:40px;font-size:11px;padding:2px 5px;background:rgba(255,255,255,0.06);border-radius:5px;text-align:center"
           oninput="${type==='arki'?'S.expenses':'S.yritys'}[${idx}].day=parseInt(this.value)||0;save();update()">
-        <span class="pill ${item.day>0?(item.day>=todayDay?'orange':'gray'):'cyan'}" style="font-size:9px">${item.day>0?(item.day>=todayDay?`⏳ Eräänt. ${item.day}. pv`:`✓ Eräpäivä ${item.day}. pv oli`):'Jatkuva'}</span>
-        <button class="btn-pay ${item.paid?'paid':''}" onclick="payExpense('${type}',${idx})">
-          ${item.paid?'↩ Peruuta maksu':'💳 Maksa nyt'}
-        </button>
+        <span class="pill ${item.paid?'green':item.day>0?(item.day>=todayDay?'orange':'gray'):'cyan'}" style="font-size:9px">
+          ${item.paid?'✓ Maksettu':item.day>0?(item.day>=todayDay?`⏳ ${item.day}. pv`:`${item.day}. pv oli`):'Jatkuva'}
+        </span>
+        ${!item.paid?`
+          <button class="btn-pay" onclick="payExpense('${type}',${idx},'tili')" title="Vähennetään tilisaldosta">
+            💳 Tili
+          </button>
+          <button class="btn-pay" style="background:rgba(34,197,94,0.08);border-color:rgba(34,197,94,0.2);color:rgba(34,197,94,0.7)"
+            onclick="payExpense('${type}',${idx},'kateis')" title="Vähennetään käteisestä">
+            💵 Käteinen
+          </button>
+        `:`
+          <button class="btn-pay paid" onclick="payExpense('${type}',${idx},'undo')">↩ Peruuta</button>
+        `}
       </div>
     `;
     el.appendChild(div);
