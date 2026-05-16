@@ -1972,6 +1972,16 @@ function doImport(e){
       const data=JSON.parse(ev.target.result);
       if(confirm('Korvataanko nykyiset tiedot tiedostolla "'+file.name+'"?')){
         S=Object.assign(JSON.parse(JSON.stringify(DEF)),data);
+        // Normalize imported data same as load()
+        [...S.income,...S.expenses,...S.yritys].forEach(x=>{ if(x.month==null) x.month=0; });
+        // Fix old recurring field: recurring=true → month=0 (joka kuukausi)
+        S.income.forEach(i=>{ if(i.recurring===true||i.recurring==null) i.month=i.month||0; delete i.recurring; });
+        if(!S.goals) S.goals=[];
+        if(!S.assets) S.assets=JSON.parse(JSON.stringify(DEF.assets));
+        if(!S.debts)  S.debts=JSON.parse(JSON.stringify(DEF.debts));
+        if(!S.history) S.history=[];
+        S.expenses.forEach(e=>{ if(!e.cat) e.cat='muut'; if(!e.type) e.type='kiintea'; });
+        S.yritys.forEach(e=>{ if(!e.cat) e.cat='yritys'; if(!e.type) e.type='kiintea'; });
         save(true);
         const sti=document.getElementById('saldoTili');   if(sti) sti.value=S.saldoTili||'';
         const ska=document.getElementById('saldoKateis'); if(ska) ska.value=S.saldoKateis||'';
