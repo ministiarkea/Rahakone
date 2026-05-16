@@ -1370,68 +1370,6 @@ function renderFIRE(){
   }
 }
 
-// ===== GOALS =====
-function renderGoals(freePerMonth){
-  const el=document.getElementById('goalsList'); if(!el) return; el.innerHTML='';
-  if(!S.goals||!S.goals.length){
-    el.innerHTML='<div class="tip" style="text-align:center;padding:20px 0">Ei tavoitteita — lisää ensimmäinen! 🎯</div>';
-    return;
-  }
-  S.goals.forEach((g,idx)=>{
-    const target=g.target||0;
-    const saved=g.saved||0;
-    const pct=target>0?Math.min(100,saved/target*100):0;
-    const remaining=Math.max(0,target-saved);
-    const monthsLeft=freePerMonth>0?remaining/freePerMonth:null;
-    const done=pct>=100;
-    const div=document.createElement('div');
-    div.className='goal-card'+(done?' done':'');
-    const monthsStr=done?'✅ Saavutettu!':monthsLeft!=null?Math.ceil(monthsLeft)+' kk nykyisellä vauhdilla':'lisää tuloja/vähennä menoja';
-    const daysStr=done?'':monthsLeft!=null?'(~'+Math.ceil(monthsLeft*30.4)+' pv)':'';
-    div.innerHTML=
-      '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">'
-        +'<div style="display:flex;align-items:center;flex:1;min-width:150px">'
-          +'<span class="goal-emoji">'+(g.emoji||'🎯')+'</span>'
-          +'<div>'
-            +'<input type="text" value="'+esc(g.label||'Tavoite')+'" style="font-size:13px;font-weight:500;padding:0;border-bottom:1px solid var(--border);color:var(--text-1);min-width:120px" onchange="S.goals['+idx+'].label=this.value;save();renderGoals('+freePerMonth+')">'
-            +'<div class="tip" style="margin-top:2px">'+monthsStr+' '+daysStr+'</div>'
-          +'</div>'
-        +'</div>'
-        +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">'
-          +'<div style="display:flex;gap:5px;align-items:center">'
-            +'<span style="font-size:10px;color:var(--text-3)">Säästetty:</span>'
-            +'<input type="number" value="'+(saved||'')+'" placeholder="0" style="width:75px;text-align:right;font-size:12px;color:var(--green)" oninput="S.goals['+idx+'].saved=parseFloat(this.value)||0;save();renderGoals('+freePerMonth+')">'
-            +'<span style="color:var(--text-3);font-size:11px">€</span>'
-          +'</div>'
-          +'<div style="display:flex;gap:5px;align-items:center">'
-            +'<span style="font-size:10px;color:var(--text-3)">Tavoite:</span>'
-            +'<input type="number" value="'+(target||'')+'" placeholder="0" style="width:75px;text-align:right;font-size:12px;color:var(--cyan)" oninput="S.goals['+idx+'].target=parseFloat(this.value)||0;save();renderGoals('+freePerMonth+')">'
-            +'<span style="color:var(--text-3);font-size:11px">€</span>'
-          +'</div>'
-        +'</div>'
-        +'<button class="btn-del" onclick="S.goals.splice('+idx+',1);save();const jaa2='+freePerMonth+';renderGoals(jaa2)">✕</button>'
-      +'</div>'
-      +'<div class="prog-wrap" style="margin-top:10px">'
-        +'<div class="prog-lbl"><span style="color:'+(done?'var(--green)':'var(--text-3)')+'">'+pct.toFixed(1)+'%</span><span style="color:var(--text-3)">'+saved.toFixed(0)+' / '+target.toFixed(0)+' €</span></div>'
-        +'<div class="prog-bar"><div class="prog-fill '+(done?'green':pct>50?'cyan':'orange')+'" style="width:'+pct+'%"></div></div>'
-      +'</div>'
-      +'<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">'
-        +['🎯','✈️','🏠','🚗','💻','🎓','💍','🌴','📱','🐕'].map(em=>
-          '<span style="cursor:pointer;font-size:1.1rem;opacity:'+(g.emoji===em?'1':'0.4')+'" onclick="S.goals['+idx+'].emoji=\''+em+'\';save();renderGoals('+freePerMonth+')">'+em+'</span>'
-        ).join('')
-      +'</div>';
-    el.appendChild(div);
-  });
-}
-function addGoal(){
-  if(!S.goals) S.goals=[];
-  S.goals.push({id:'g'+Date.now(),label:'Uusi tavoite',target:1000,saved:0,emoji:'🎯'});
-  save();
-  const totalInc=S.income.filter(forThisMonth).reduce((s,i)=>s+(i.amount||0),0);
-  const totalExp=[...S.expenses,...S.yritys].filter(forThisMonth).reduce((s,e)=>s+(e.amount||0),0);
-  renderGoals(totalInc-totalExp);
-}
-
 // ===== NET WORTH =====
 function renderNetWorth(){
   const saldo=(S.saldoTili||0)+(S.saldoKateis||0);
@@ -1572,6 +1510,7 @@ function update(){
   renderMenorakenne(totalInc, totalExp);
   renderBenchmarking();
   renderXP();
+  renderHistoria();
 }
 
 function renderAll(){
@@ -1798,6 +1737,11 @@ function renderGoals(freePerMonth){
     el.appendChild(div);
   });
 }
+function addGoal(){
+  if(!S.goals) S.goals=[];
+  S.goals.push({id:'g'+Date.now(),label:'Uusi tavoite',target:1000,saved:0,emoji:'🎯'});
+  save(); update();
+}
 
 // ===== HELP MODAL =====
 const HELP_CONTENT = {
@@ -1944,6 +1888,16 @@ const HELP_CONTENT = {
       {i:'🔴',t:'<strong>Yli viitearvon</strong> = ei välttämättä ongelma, mutta kannattaa miettiä löytyykö säästövaraa.'},
     ],
     warn:'⚠️ Viitearvot ovat suuntaa-antavia ja vaihtelevat paikkakunnittain ja elämäntilanteen mukaan. Ne on laadittu yksinasuvalle — perheellisille tai erityistarpeita omaaville ne eivät sovi sellaisenaan.'
+  },
+  historia:{
+    title:'📈 Kuukausihistoria',
+    rows:[
+      {i:'📸',t:'Paina <strong>Tallenna kuukausi</strong> ennen kuin vaihdat kuukautta tai nollaat tietoja — sovellus ottaa tilannekuvan.'},
+      {i:'📊',t:'Tallennettu snapshot sisältää: tulot, menot, vapaan rahan ja tilisaldon kyseiseltä hetkeltä.'},
+      {i:'📈',t:'Pylväskaavio näyttää kehityksen ajan yli — näet helposti onko säästäminen parantunut.'},
+      {i:'✕',t:'Poista yksittäinen kuukausi klikkaamalla ✕-nappia kuukausikortin oikeasta yläkulmasta.'},
+    ],
+    info:'Muista tallentaa ennen kuun vaihtoa — sovellus ei tallenna automaattisesti historiaa, koska kaikki data on vain sinun laitteellasi.'
   },
   ai:{
     title:'🤖 AI-sparraaja',
@@ -2163,8 +2117,7 @@ const sti=document.getElementById('saldoTili');   if(sti&&S.saldoTili)   sti.val
 const ska=document.getElementById('saldoKateis'); if(ska&&S.saldoKateis) ska.value=S.saldoKateis;
 renderIncome(); renderAll();
 renderTOTD();
-// init XP baseline after first render
-setTimeout(()=>{ _prevXP=calcXP(); },500);
+setTimeout(()=>{ _prevXP=calcXP(); maybeShowWizard(); },300);
 </script>
 </body>
 </html>
