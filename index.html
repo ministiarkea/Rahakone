@@ -1225,19 +1225,23 @@ function renderDayBudget(){
   const spendable = Math.max(0, saldo - billsBeforeNext);
 
   if(nextInc){
-    const daysUntil = nextInc.day - TODAY_DAY;
-    const perDay = daysUntil>0 ? spendable/daysUntil : spendable;
-    const el=document.getElementById('pb-realday'); if(el) el.textContent=perDay.toFixed(2)+' €/pv';
+    const daysUntil = nextInc.day - TODAY_DAY; // 0 = palkkapäivä on tänään
+    // Jos palkka tulee tänään, jaetaan vain huomispäivän budjetin (1 pv)
+    const divisor = Math.max(1, daysUntil);
+    const perDay = spendable / divisor;
+    const el=document.getElementById('pb-realday');
+    if(el){ el.textContent=perDay.toFixed(2)+' €/pv'; el.className='big-num '+(perDay<5?'red':perDay<15?'orange':'green'); }
     const note=document.getElementById('pb-realnote');
     if(note) note.textContent=saldo.toFixed(0)+'€ saldo'+(billsBeforeNext>0?' − '+billsBeforeNext.toFixed(0)+'€ laskut':'')
-      +' = '+spendable.toFixed(0)+'€ ÷ '+daysUntil+' pv → '+nextInc.label+' '+nextInc.day+'. pv';
+      +' = '+spendable.toFixed(0)+'€ ÷ '+divisor+' pv → '+nextInc.label+' '+nextInc.day+'. pv'+(daysUntil===0?' (tänään!)':'');
     const passed=nextInc.day>0?Math.max(0,Math.min(100,(nextInc.day-daysUntil)/nextInc.day*100)):0;
     const lbl=document.getElementById('nextIncLabel'); if(lbl) lbl.textContent=nextInc.label+': '+(daysUntil===0?'tänään!':daysUntil+' pv');
     const bar=document.getElementById('nextIncBar');   if(bar) bar.style.width=passed+'%';
   } else {
     const perDay = DAYS_LEFT>0 ? spendable/DAYS_LEFT : 0;
-    const el=document.getElementById('pb-realday'); if(el) el.textContent=perDay.toFixed(2)+' €/pv';
-    const note=document.getElementById('pb-realnote'); if(note) note.textContent=spendable.toFixed(0)+'€ ÷ '+DAYS_LEFT+' pv jäljellä';
+    const el=document.getElementById('pb-realday');
+    if(el){ el.textContent=perDay.toFixed(2)+' €/pv'; el.className='big-num '+(perDay<5?'red':perDay<15?'orange':'green'); }
+    const note=document.getElementById('pb-realnote'); if(note) note.textContent=spendable.toFixed(0)+'€ ÷ '+DAYS_LEFT+' pv jäljellä kuussa';
     const lbl=document.getElementById('nextIncLabel'); if(lbl) lbl.textContent='Ei tulevia tuloja tässä kuussa';
     const bar=document.getElementById('nextIncBar');   if(bar) bar.style.width='100%';
   }
@@ -1251,13 +1255,16 @@ function renderDayBudget(){
   if(mf){ mf.textContent=fmt(monthFree); mf.className='sval '+(monthFree>=0?'green':'red'); }
 
   // --- TABLE: saldo + this month unpaid income − this month unpaid expenses ---
+  // (Shows month-end scenario including all expected income)
   const unpaidInc = S.income.filter(i=>forThisMonth(i)&&!i.paid).reduce((s,i)=>s+(i.amount||0),0);
   const unpaidExp = [...S.expenses,...S.yritys].filter(e=>forThisMonth(e)&&!e.paid&&e.day>0).reduce((s,e)=>s+(e.amount||0),0);
   const available = saldo + unpaidInc - unpaidExp;
 
   const tbody=document.getElementById('dayBudgetTable'); if(!tbody) return; tbody.innerHTML='';
-  [10,15,20,25,30,35,40].forEach(t=>{
-    const needed=t*DAYS_LEFT, diff=available-needed, ok=diff>=0;
+  // Days left starting from tomorrow (spending budget for remaining days)
+  const daysForBudget = Math.max(1, DAYS_LEFT);
+  [5,10,15,20,25,30,40].forEach(t=>{
+    const needed=t*daysForBudget, diff=available-needed, ok=diff>=0;
     const tr=document.createElement('tr');
     tr.innerHTML='<td><strong>'+t+' €/pv</strong></td><td>'+needed.toFixed(0)+'€</td>'
       +'<td>'+(ok?'<span class="pill green">✓ Riittää</span>':'<span class="pill red">✗ Ei riitä</span>')+'</td>'
@@ -1265,7 +1272,7 @@ function renderDayBudget(){
     tbody.appendChild(tr);
   });
   const n=document.getElementById('daybudget-note');
-  if(n) n.textContent='Netto: '+saldo.toFixed(0)+'€ + '+unpaidInc.toFixed(0)+'€ tuloja − '+unpaidExp.toFixed(0)+'€ menoja = '+available.toFixed(0)+'€';
+  if(n) n.textContent='Saldo '+saldo.toFixed(0)+'€ + tulossa '+unpaidInc.toFixed(0)+'€ − maksamatta '+unpaidExp.toFixed(0)+'€ = '+available.toFixed(0)+'€ jäljellä '+daysForBudget+' päivälle';
 
   renderFutureSummary();
 }
@@ -1446,7 +1453,7 @@ function getBudgetData(){
   return 'RAHAKONE — '+TODAY.toLocaleDateString('fi-FI')+'\nPäivä: '+TODAY_DAY+'. / '+DAYS_LEFT+' pv jäljellä\n\nSALDO: tili '+(S.saldoTili||0)+'€ + käteinen '+(S.saldoKateis||0)+'€ = '+((S.saldoTili||0)+(S.saldoKateis||0))+'€\n\nTULOT (tämä kuu): '+totalInc+'€\n'
     +S.income.filter(forThisMonth).map(i=>'  - '+i.label+': '+(i.amount||0)+'€ (pv '+i.day+', '+(i.paid?'saatu':'tulossa')+')').join('\n')
     +'\n\nMENOT (tämä kuu): '+totalExp+'€\n'
-    +[...S.expenses,...S.yritys].filter(forThisMonth).map(e=>'  - '+e.label+': '+(e.amount||0)+'€ ('+e.paid?'maksettu':'maksamatta'+')').join('\n')
+    +[...S.expenses,...S.yritys].filter(forThisMonth).map(e=>'  - '+e.label+': '+(e.amount||0)+'€ ('+(e.paid?'maksettu':'maksamatta')+')').join('\n')
     +'\n\nTASAPAINO: '+totalInc+'€ − '+totalExp+'€ = '+(totalInc-totalExp)+'€\n\nJAKO-OHJELMA:\n'
     +S.alloc.map(a=>'  - '+a.label+': '+a.pct+'% = '+((a.pct/100)*totalInc).toFixed(0)+'€').join('\n');
 }
