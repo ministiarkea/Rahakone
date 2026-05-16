@@ -35,6 +35,9 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);
 .nav-btn{flex-shrink:0;background:none;border:none;border-bottom:2px solid transparent;color:var(--text-3);cursor:pointer;font-family:inherit;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:11px 11px;transition:all 0.15s;white-space:nowrap;}
 .nav-btn:hover{color:var(--text-2);}
 .nav-btn.active{color:var(--cyan);border-bottom-color:var(--cyan);}
+.nav-group{display:flex;align-items:center;flex-shrink:0;}
+.nav-group-lbl{font-size:7px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-3);padding:0 4px 0 8px;white-space:nowrap;border-right:1px solid var(--border);margin-right:2px;line-height:1;align-self:center;}
+.nav-sep{width:1px;background:var(--border);height:28px;flex-shrink:0;margin:0 2px;}
 .main{max-width:680px;margin:0 auto;padding:18px 14px 100px;}
 .tab{display:none;}.tab.active{display:block;}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 16px;margin-bottom:10px;}
@@ -77,7 +80,26 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
 .btn-sm{font-size:11px;padding:5px 10px;border-radius:7px;}
 .btn-del{background:none;border:none;color:rgba(239,68,68,0.4);cursor:pointer;font-size:13px;padding:0 8px;transition:color 0.15s;line-height:1;}
 .btn-del:hover{color:var(--red);}
-.prog-wrap{margin:8px 0;}
+/* Expense type badge */
+.type-badge{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:2px 6px;border-radius:4px;flex-shrink:0;cursor:pointer;}
+.type-badge.kiintea{background:rgba(124,92,191,0.2);color:rgba(180,160,255,0.9);}
+.type-badge.muuttuva{background:rgba(249,115,22,0.15);color:rgba(253,186,116,0.9);}
+.cat-select{font-size:10px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:6px;color:var(--text-2);padding:2px 6px;cursor:pointer;font-family:inherit;}
+.cat-select option{background:#0f0f1c;}
+.bench-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:12px;}
+.bench-row:last-child{border-bottom:none;}
+.bench-diff.pos{color:var(--green);font-weight:500;}
+.bench-diff.neg{color:var(--red);font-weight:500;}
+.bench-diff.ok{color:var(--text-3);}
+.xp-bar-wrap{background:rgba(255,255,255,0.06);border-radius:99px;height:8px;overflow:hidden;margin:6px 0;}
+.xp-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#7c5cbf,#00c8f0);transition:width 0.6s cubic-bezier(.4,2,.6,1);}
+.xp-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(124,92,191,0.15);border:1px solid rgba(124,92,191,0.3);border-radius:20px;padding:3px 10px;font-size:10px;color:rgba(180,160,255,0.9);}
+.xp-toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,rgba(124,92,191,0.97),rgba(0,200,240,0.92));color:#fff;font-size:12px;font-weight:600;padding:9px 20px;border-radius:99px;z-index:9999;pointer-events:none;opacity:0;transition:opacity 0.3s;white-space:nowrap;}
+.xp-toast.show{opacity:1;}
+.scenario-card{background:rgba(0,200,240,0.04);border:1px solid rgba(0,200,240,0.14);border-radius:12px;padding:13px;margin-bottom:8px;}
+.scenario-num{font-size:1.4rem;font-weight:200;color:var(--cyan);}
+.split-bar-wrap{border-radius:99px;overflow:hidden;height:16px;display:flex;margin:8px 0;}
+.split-bar-seg{height:100%;transition:width 0.5s ease;}
 .prog-lbl{display:flex;justify-content:space-between;font-size:10px;color:var(--text-3);margin-bottom:4px;font-weight:500;}
 .prog-bar{background:rgba(255,255,255,0.06);border-radius:100px;height:5px;overflow:hidden;}
 .prog-fill{height:100%;border-radius:100px;transition:width 0.5s ease;}
@@ -227,18 +249,34 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
 </div>
 
 <nav class="nav">
-  <button class="nav-btn active" onclick="showTab('tilanne',this)">📊 Tilanne</button>
-  <button class="nav-btn" onclick="showTab('tulot',this)">💰 Tulot</button>
-  <button class="nav-btn" onclick="showTab('menot',this)">🏠 Menot</button>
-  <button class="nav-btn" onclick="showTab('yritys',this)">🏢 Yritys</button>
-  <button class="nav-btn" onclick="showTab('paiva',this)">📅 Päiväbudjetti</button>
-  <button class="nav-btn" onclick="showTab('suunnitelmat',this)">🎯 Suunnitelmat</button>
-  <button class="nav-btn" onclick="showTab('jako',this)">🤝 Jako</button>
-  <button class="nav-btn" onclick="showTab('kalenteri',this)">🗓 Kalenteri</button>
-  <button class="nav-btn" onclick="showTab('tavoitteet',this)">🎯 Tavoitteet</button>
-  <button class="nav-btn" onclick="showTab('fire',this)">🔥 FIRE</button>
-  <button class="nav-btn" onclick="showTab('varallisuus',this)">💎 Varallisuus</button>
-  <button class="nav-btn" onclick="showTab('ai',this)">🤖 AI-sparri</button>
+  <div class="nav-group">
+    <span class="nav-group-lbl">Perustiedot</span>
+    <button class="nav-btn active" onclick="showTab('tilanne',this)">📊 Tilanne</button>
+    <button class="nav-btn" onclick="showTab('tulot',this)">💰 Tulot</button>
+    <button class="nav-btn" onclick="showTab('menot',this)">🏠 Menot</button>
+    <button class="nav-btn" onclick="showTab('yritys',this)">🏢 Yritys</button>
+  </div>
+  <div class="nav-sep"></div>
+  <div class="nav-group">
+    <span class="nav-group-lbl">Seuranta</span>
+    <button class="nav-btn" onclick="showTab('paiva',this)">📅 Päiväbudjetti</button>
+    <button class="nav-btn" onclick="showTab('kalenteri',this)">🗓 Kalenteri</button>
+    <button class="nav-btn" onclick="showTab('historia',this)">📈 Historia</button>
+  </div>
+  <div class="nav-sep"></div>
+  <div class="nav-group">
+    <span class="nav-group-lbl">Tavoitteet</span>
+    <button class="nav-btn" onclick="showTab('tavoitteet',this)">🎯 Tavoitteet</button>
+    <button class="nav-btn" onclick="showTab('suunnitelmat',this)">🗂 Suunnitelmat</button>
+    <button class="nav-btn" onclick="showTab('jako',this)">🤝 Jako</button>
+  </div>
+  <div class="nav-sep"></div>
+  <div class="nav-group">
+    <span class="nav-group-lbl">Tulevaisuus</span>
+    <button class="nav-btn" onclick="showTab('fire',this)">🔥 FIRE</button>
+    <button class="nav-btn" onclick="showTab('varallisuus',this)">💎 Varallisuus</button>
+    <button class="nav-btn" onclick="showTab('ai',this)">🤖 AI-sparraaja</button>
+  </div>
 </nav>
 
 <div class="main">
@@ -348,16 +386,35 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
       <div class="tip">menot / tulot</div>
     </div>
     <div class="sb" style="text-align:center">
-      <div class="slbl">Jää / vuosi</div>
+      <div class="slbl">Nettoansiot / vuosi</div>
       <div class="sval green" id="sv-yearfree">—</div>
-      <div class="tip">vuositasolla</div>
+      <div class="tip">säästö vuositasolla</div>
     </div>
+  </div>
+
+  <!-- XP panel -->
+  <div class="card" style="margin-bottom:10px">
+    <div class="lbl"><div class="lbl-dot"></div>Talousprofiilisi</div>
+    <div id="xp-panel"></div>
+  </div>
+
+  <!-- Menorakenne -->
+  <div class="sec-title">Menorakenne <button class="help-btn" onclick="showHelp('menorakenne')">?</button></div>
+  <div class="card">
+    <div id="menorakenne-wrap"></div>
   </div>
 
   <div class="card">
     <div class="lbl"><div class="lbl-dot"></div>Menojakauma</div>
     <canvas id="chartMenot" height="180" style="display:none"></canvas>
     <div id="chartLegend" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:7px;"></div>
+  </div>
+
+  <!-- Benchmarking -->
+  <div class="sec-title">Viitearvot <button class="help-btn" onclick="showHelp('benchmark')">?</button></div>
+  <div class="card">
+    <div style="font-size:10px;color:var(--text-3);margin-bottom:8px">Takuusäätiön kohtuullinen minimi — yksinasuva aikuinen</div>
+    <div id="benchmark-list"></div>
   </div>
 </div>
 
@@ -648,9 +705,30 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
   </div>
 </div>
 
+<!-- ======= HISTORIA ======= -->
+<div id="tab-historia" class="tab">
+  <div class="sec-title">Kuukausihistoria <button class="help-btn" onclick="showHelp('historia')">?</button></div>
+  <div class="tip" style="margin-bottom:12px">Tallenna kuukauden tilanne ennen kuin vaihdat kuukautta. Näet trendit ja kehityksen ajan myötä.</div>
+
+  <div class="card card-accent" style="margin-bottom:10px">
+    <div class="lbl"><div class="lbl-dot"></div>Tallenna tämä kuukausi</div>
+    <div style="font-size:12px;color:var(--text-2);margin-bottom:12px;line-height:1.6">
+      Ottaa tilannekuvan nykyisistä luvuista: tulot, menot, saldo ja säästämisaste.
+    </div>
+    <button class="btn-grad" onclick="saveMonthSnapshot()">📸 Tallenna kuukausi</button>
+  </div>
+
+  <div id="histList"></div>
+
+  <div class="sec-title mt16" id="histChartTitle" style="display:none">Kehitys</div>
+  <div class="card" id="histChartCard" style="display:none">
+    <canvas id="histChart" height="180"></canvas>
+  </div>
+</div>
+
 <!-- ======= AI ======= -->
 <div id="tab-ai" class="tab">
-  <div class="sec-title">AI-sparri <button class="help-btn" onclick="showHelp('ai')">?</button></div>
+  <div class="sec-title">AI-sparraaja <button class="help-btn" onclick="showHelp('ai')">?</button></div>
   <div class="ai-panel">
     <div style="font-size:12px;color:rgba(180,160,255,0.8);margin-bottom:14px;line-height:1.7">
       Kopioi budjettitietosi ja liitä Claude.ai:hin, ChatGPT:hen, Geminiin tai muuhun AI:hin. Valitse kehote ensin.
@@ -668,6 +746,74 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
 </div>
 
 </div><!-- /main -->
+
+<!-- ======= PIKASTARTTI WIZARD ======= -->
+<div class="modal-overlay" id="wizardModal">
+  <div class="modal-box" style="max-width:460px">
+    <div class="modal-title" style="font-size:15px;margin-bottom:4px">👋 Tervetuloa Rahakoneeseen!</div>
+    <div style="font-size:12px;color:var(--text-2);margin-bottom:20px;line-height:1.6">Täytetään perustiedot yhdessä — kestää alle minuutin. Voit muuttaa kaikkea myöhemmin.</div>
+
+    <!-- Step 1 -->
+    <div class="wiz-step" id="wiz-1">
+      <div style="font-size:11px;color:var(--cyan);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px">Vaihe 1 / 3 — Tulot</div>
+      <div style="font-size:13px;font-weight:500;color:var(--text-1);margin-bottom:16px">Mikä on kuukausitulosi (netto)?</div>
+      <div class="xp-row" style="margin-bottom:10px">
+        <div class="xp-tag">💰</div>
+        <input type="number" id="wiz-palkka" placeholder="esim. 2400" style="flex:1;font-size:1.1rem;padding:12px">
+        <span style="padding:0 14px;color:var(--text-3)">€/kk</span>
+      </div>
+      <div style="font-size:11px;color:var(--text-3);margin-bottom:20px">Palkka, etuudet tai muu säännöllinen tulo. Syötä 0 jos epävarma — voit lisätä myöhemmin.</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-grad" onclick="wizNext(2)" style="flex:1">Seuraava →</button>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="wiz-step" id="wiz-2" style="display:none">
+      <div style="font-size:11px;color:var(--cyan);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px">Vaihe 2 / 3 — Asuminen</div>
+      <div style="font-size:13px;font-weight:500;color:var(--text-1);margin-bottom:16px">Paljonko maksat asumisesta kuukaudessa?</div>
+      <div class="xp-row" style="margin-bottom:10px">
+        <div class="xp-tag">🏠</div>
+        <input type="number" id="wiz-vuokra" placeholder="esim. 750" style="flex:1;font-size:1.1rem;padding:12px">
+        <span style="padding:0 14px;color:var(--text-3)">€/kk</span>
+      </div>
+      <div style="font-size:11px;color:var(--text-3);margin-bottom:20px">Vuokra tai lainanlyhennys + vastike yhteensä.</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn" onclick="wizNext(1)" style="flex:0 0 auto">← Takaisin</button>
+        <button class="btn-grad" onclick="wizNext(3)" style="flex:1">Seuraava →</button>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="wiz-step" id="wiz-3" style="display:none">
+      <div style="font-size:11px;color:var(--cyan);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px">Vaihe 3 / 3 — Muut isot menot</div>
+      <div style="font-size:13px;font-weight:500;color:var(--text-1);margin-bottom:16px">Arvioi muut kuukausittaiset menosi:</div>
+      <div class="xp-row" style="margin-bottom:8px">
+        <div class="xp-tag" style="font-size:9px;min-width:52px">🛒 Ruoka</div>
+        <input type="number" id="wiz-ruoka" placeholder="300" style="flex:1;padding:10px">
+        <span style="padding:0 12px;color:var(--text-3);font-size:12px">€</span>
+      </div>
+      <div class="xp-row" style="margin-bottom:8px">
+        <div class="xp-tag" style="font-size:9px;min-width:52px">🚗 Liikk.</div>
+        <input type="number" id="wiz-liikkuminen" placeholder="80" style="flex:1;padding:10px">
+        <span style="padding:0 12px;color:var(--text-3);font-size:12px">€</span>
+      </div>
+      <div class="xp-row" style="margin-bottom:16px">
+        <div class="xp-tag" style="font-size:9px;min-width:52px">📱 Puhelin</div>
+        <input type="number" id="wiz-puhelin" placeholder="30" style="flex:1;padding:10px">
+        <span style="padding:0 12px;color:var(--text-3);font-size:12px">€</span>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn" onclick="wizNext(2)" style="flex:0 0 auto">← Takaisin</button>
+        <button class="btn-grad" onclick="wizFinish()" style="flex:1">✅ Valmis — aloita!</button>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:14px">
+      <button class="bb-btn" onclick="wizSkip()">Ohita — täytän itse</button>
+    </div>
+  </div>
+</div>
 
 <!-- ======= HELP MODAL ======= -->
 <div class="modal-overlay" id="helpModal" onclick="if(event.target===this)closeHelp()">
@@ -715,14 +861,14 @@ const DEF = {
     {id:'i2',label:'Lapsilisä',amount:0,day:26,month:0,paid:false},
   ],
   expenses:[
-    {id:'e1',label:'Vuokra',              amount:0,day:1, month:0,paid:false,paidFrom:null},
-    {id:'e2',label:'Sähkönsiirto',        amount:0,day:5, month:0,paid:false,paidFrom:null},
-    {id:'e3',label:'Sähkö (kulutus)',     amount:0,day:5, month:0,paid:false,paidFrom:null},
-    {id:'e4',label:'Kotivakuutus',        amount:0,day:1, month:0,paid:false,paidFrom:null},
-    {id:'e5',label:'Puhelin/tietoliikenne',amount:0,day:10,month:0,paid:false,paidFrom:null},
-    {id:'e6',label:'Salikortti',          amount:0,day:1, month:0,paid:false,paidFrom:null},
-    {id:'e7',label:'Junaliput',           amount:0,day:0, month:0,paid:false,paidFrom:null},
-    {id:'e8',label:'Luottokortti/lainat', amount:0,day:15,month:0,paid:false,paidFrom:null},
+    {id:'e1',label:'Vuokra',              amount:0,day:1, month:0,paid:false,paidFrom:null,cat:'asuminen',   type:'kiintea'},
+    {id:'e2',label:'Sähkönsiirto',        amount:0,day:5, month:0,paid:false,paidFrom:null,cat:'asuminen',   type:'kiintea'},
+    {id:'e3',label:'Sähkö (kulutus)',     amount:0,day:5, month:0,paid:false,paidFrom:null,cat:'asuminen',   type:'kiintea'},
+    {id:'e4',label:'Kotivakuutus',        amount:0,day:1, month:0,paid:false,paidFrom:null,cat:'asuminen',   type:'kiintea'},
+    {id:'e5',label:'Puhelin/netti',       amount:0,day:10,month:0,paid:false,paidFrom:null,cat:'liikkuminen',type:'kiintea'},
+    {id:'e6',label:'Salikortti',          amount:0,day:1, month:0,paid:false,paidFrom:null,cat:'terveys',    type:'kiintea'},
+    {id:'e7',label:'Junaliput',           amount:0,day:0, month:0,paid:false,paidFrom:null,cat:'liikkuminen',type:'muuttuva'},
+    {id:'e8',label:'Luottokortti/lainat', amount:0,day:15,month:0,paid:false,paidFrom:null,cat:'asuminen',   type:'kiintea'},
   ],
   yritys:[
     {id:'y1',label:'Nettisivut/hosting',   amount:0,day:1,month:0,paid:false,paidFrom:null},
@@ -748,6 +894,8 @@ const DEF = {
     {id:'db3',label:'Kulutusluotto',amount:0},
   ],
   firePortfolio:0, fireMonthlySave:0, fireReturn:7,
+  history:[],
+  wizardDone:false,
 };
 let S = JSON.parse(JSON.stringify(DEF));
 
@@ -778,6 +926,11 @@ function load(){
   if(S.firePortfolio==null) S.firePortfolio=0;
   if(S.fireMonthlySave==null) S.fireMonthlySave=0;
   if(S.fireReturn==null) S.fireReturn=7;
+  if(!S.history) S.history=[];
+  if(S.wizardDone==null) S.wizardDone=false;
+  // normalize expense categories
+  S.expenses.forEach(e=>{ if(!e.cat) e.cat='muut'; if(!e.type) e.type='kiintea'; });
+  S.yritys.forEach(e=>{ if(!e.cat) e.cat='yritys'; if(!e.type) e.type='kiintea'; });
 }
 
 // ===== TABS =====
@@ -867,6 +1020,7 @@ function payExpense(type, idx, method){
   const tiEl=document.getElementById('saldoTili');   if(tiEl) tiEl.value=S.saldoTili||'';
   const kaEl=document.getElementById('saldoKateis'); if(kaEl) kaEl.value=S.saldoKateis||'';
   renderAll();
+  if(method!=='undo') checkXPToast();
 }
 
 // ===== RENDER EXPENSES =====
@@ -920,6 +1074,12 @@ function renderExpenseList(listId, arr, type){
             +' style="width:38px;font-size:11px;padding:2px 5px;background:rgba(255,255,255,.06);border-radius:5px;text-align:center"'
             +' oninput="'+(type==='arki'?'S.expenses':'S.yritys')+'['+idx+'].day=parseInt(this.value)||0;save();update()">'
         )
+        +(type==='arki'
+          ? '<select class="cat-select" onchange="S.expenses['+idx+'].cat=this.value;save();renderAll()">'
+            +['asuminen','ruoka','liikkuminen','terveys','harrastukset','muut'].map(c=>'<option value="'+c+'"'+(item.cat===c?' selected':'')+'>'+{asuminen:'🏠 Asuminen',ruoka:'🛒 Ruoka',liikkuminen:'🚗 Liikkuminen',terveys:'💊 Terveys',harrastukset:'🎮 Harrastukset',muut:'📦 Muut'}[c]+'</option>').join('')
+            +'</select>'
+            +'<span class="type-badge '+(item.type||'kiintea')+'" title="Klikkaa vaihtaaksesi" onclick="var arr=S.expenses;arr['+idx+'].type=arr['+idx+'].type===\'kiintea\'?\'muuttuva\':\'kiintea\';save();renderAll()">'+(item.type==='muuttuva'?'muuttuva':'kiinteä')+'</span>'
+          : '')
         + statusPill
         + expBtns(type, idx, item.paid, future)
       +'</div>';
@@ -938,7 +1098,7 @@ function renderExpenseList(listId, arr, type){
   }
 }
 function addExpense(type){
-  (type==='arki'?S.expenses:S.yritys).push({id:'x'+Date.now(),label:'Uusi kulu',amount:0,day:1,month:0,paid:false,paidFrom:null});
+  (type==='arki'?S.expenses:S.yritys).push({id:'x'+Date.now(),label:'Uusi kulu',amount:0,day:1,month:0,paid:false,paidFrom:null,cat:'muut',type:'kiintea'});
   save(); renderAll();
 }
 
@@ -1409,6 +1569,9 @@ function update(){
   renderFIRE();
   renderNetWorth();
   renderGoals(jaa);
+  renderMenorakenne(totalInc, totalExp);
+  renderBenchmarking();
+  renderXP();
 }
 
 function renderAll(){
@@ -1417,130 +1580,379 @@ function renderAll(){
   update();
 }
 
+// ===== TAKUUSÄÄTIÖ REFERENCE VALUES =====
+// Kohtuullinen minimi — yksinasuva aikuinen (2024 viitearvot, euroa/kk)
+const REFERENCE_VALUES = {
+  asuminen:    { label:'Asuminen',     ref:620,  icon:'🏠' },
+  ruoka:       { label:'Ruoka & talous',ref:310,  icon:'🛒' },
+  liikkuminen: { label:'Liikkuminen',  ref:80,   icon:'🚗' },
+  terveys:     { label:'Terveys',      ref:55,   icon:'💊' },
+  harrastukset:{ label:'Harrastukset', ref:65,   icon:'🎮' },
+};
+
+function calculateReferenceValues(){
+  const catTotals={};
+  S.expenses.filter(forThisMonth).forEach(e=>{
+    const c=e.cat||'muut';
+    catTotals[c]=(catTotals[c]||0)+(e.amount||0);
+  });
+  return catTotals;
+}
+
+// ===== MENORAKENNE (kiinteät vs muuttuvat) =====
+function renderMenorakenne(totalInc, totalExp){
+  const el=document.getElementById('menorakenne-wrap'); if(!el) return;
+  const kiinteat = S.expenses.filter(e=>forThisMonth(e)&&e.type!=='muuttuva').reduce((s,e)=>s+(e.amount||0),0);
+  const muuttuvat = S.expenses.filter(e=>forThisMonth(e)&&e.type==='muuttuva').reduce((s,e)=>s+(e.amount||0),0);
+  const yritysTotal = S.yritys.filter(forThisMonth).reduce((s,e)=>s+(e.amount||0),0);
+  const vapaa = Math.max(0, totalInc - totalExp);
+  const total = kiinteat + muuttuvat + yritysTotal + vapaa || 1;
+  const pK=kiinteat/total*100, pM=muuttuvat/total*100, pY=yritysTotal/total*100, pV=vapaa/total*100;
+  el.innerHTML=
+    '<div class="split-bar-wrap">'
+      +'<div class="split-bar-seg" style="width:'+pK.toFixed(1)+'%;background:rgba(124,92,191,0.7)" title="Kiinteät '+kiinteat.toFixed(0)+'€"></div>'
+      +'<div class="split-bar-seg" style="width:'+pM.toFixed(1)+'%;background:rgba(249,115,22,0.65)" title="Muuttuvat '+muuttuvat.toFixed(0)+'€"></div>'
+      +'<div class="split-bar-seg" style="width:'+pY.toFixed(1)+'%;background:rgba(0,100,160,0.55)" title="Yritys '+yritysTotal.toFixed(0)+'€"></div>'
+      +'<div class="split-bar-seg" style="width:'+pV.toFixed(1)+'%;background:rgba(34,197,94,0.45)" title="Vapaa '+vapaa.toFixed(0)+'€"></div>'
+    +'</div>'
+    +'<div style="display:flex;flex-wrap:wrap;gap:10px;font-size:10px;margin-top:6px">'
+      +'<span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:rgba(124,92,191,0.7);margin-right:4px"></span>Kiinteät '+kiinteat.toFixed(0)+'€ ('+pK.toFixed(0)+'%)</span>'
+      +'<span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:rgba(249,115,22,0.65);margin-right:4px"></span>Muuttuvat '+muuttuvat.toFixed(0)+'€ ('+pM.toFixed(0)+'%)</span>'
+      +(yritysTotal>0?'<span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:rgba(0,100,160,0.55);margin-right:4px"></span>Yritys '+yritysTotal.toFixed(0)+'€ ('+pY.toFixed(0)+'%)</span>':'')
+      +'<span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:rgba(34,197,94,0.45);margin-right:4px"></span>Vapaa '+vapaa.toFixed(0)+'€ ('+pV.toFixed(0)+'%)</span>'
+    +'</div>';
+}
+
+// ===== BENCHMARKING =====
+function renderBenchmarking(){
+  const el=document.getElementById('benchmark-list'); if(!el) return;
+  const cats=calculateReferenceValues();
+  el.innerHTML='';
+  let anyData=false;
+  Object.entries(REFERENCE_VALUES).forEach(([key,rv])=>{
+    const actual=cats[key]||0;
+    if(actual===0) return;
+    anyData=true;
+    const diff=actual-rv.ref;
+    const diffTxt=diff>0?'+'+diff.toFixed(0)+'€ yli':diff<0?Math.abs(diff.toFixed(0))+'€ alle':'= viitearvo';
+    const cls=diff<=-10?'pos':diff>=20?'neg':'ok';
+    const row=document.createElement('div'); row.className='bench-row';
+    row.innerHTML=
+      '<div style="display:flex;align-items:center;gap:7px">'
+        +'<span>'+rv.icon+'</span>'
+        +'<div>'
+          +'<div style="color:var(--text-1)">'+rv.label+'</div>'
+          +'<div style="font-size:10px;color:var(--text-3)">Viitearvo: '+rv.ref+'€/kk (yksinasuva)</div>'
+        +'</div>'
+      +'</div>'
+      +'<div class="bench-diff '+cls+'">'+actual.toFixed(0)+'€<div style="font-size:10px;font-weight:400">'+diffTxt+'</div></div>';
+    el.appendChild(row);
+  });
+  if(!anyData) el.innerHTML='<div class="tip" style="text-align:center;padding:16px 0">Lisää menoja ja aseta kategoriat Menot-välilehdellä nähdäksesi vertailun. 🎯</div>';
+}
+
+// ===== XP SYSTEM =====
+const XP_LEVELS=[0,100,250,500,900,1500,2500,4000,6000,9000,14000];
+const XP_TITLES=['Aloittelija','Budjetoija','Säästäjä','Talousviisas','Rahahaltija','Finanssiatleta','Puskuriprinssi','FIRE-lähtijä','Sijoitusguru','Taloudellisesti vapaa','Legenda 💎'];
+
+function calcXP(){
+  let xp=0;
+  const totalInc=S.income.filter(forThisMonth).reduce((s,i)=>s+(i.amount||0),0);
+  const totalExp=[...S.expenses,...S.yritys].filter(forThisMonth).reduce((s,e)=>s+(e.amount||0),0);
+  const jaa=totalInc-totalExp;
+  if(totalInc>0) xp+=50;
+  if(totalExp>0) xp+=30;
+  if(jaa>0) xp+=80;
+  const saastoPct=totalInc>0?jaa/totalInc:0;
+  if(saastoPct>=0.1) xp+=100;
+  if(saastoPct>=0.2) xp+=150;
+  if(saastoPct>=0.3) xp+=200;
+  if(saastoPct>=0.5) xp+=300;
+  if((S.goals||[]).length>0) xp+=50;
+  if((S.goals||[]).some(g=>g.target>0&&g.saved>=g.target)) xp+=200;
+  const nwAssets=S.assets.reduce((s,a)=>s+(a.amount||0),0);
+  const nwDebts=S.debts.reduce((s,d)=>s+(d.amount||0),0);
+  if(nwAssets>nwDebts&&nwAssets>0) xp+=120;
+  if(S.firePortfolio>0) xp+=80;
+  const firePct=S.firePortfolio>0&&totalExp>0?S.firePortfolio/(totalExp*12*25):0;
+  if(firePct>=0.25) xp+=200;
+  if(firePct>=0.5)  xp+=300;
+  if(firePct>=1.0)  xp+=500;
+  // hätärahasto: 3kk menot
+  const pusturi=nwAssets-(nwDebts>0?nwDebts:0);
+  if(pusturi>=totalExp*3) xp+=200;
+  return xp;
+}
+
+function renderXP(){
+  const el=document.getElementById('xp-panel'); if(!el) return;
+  const xp=calcXP();
+  let level=0;
+  for(let i=0;i<XP_LEVELS.length-1;i++){ if(xp>=XP_LEVELS[i]) level=i; }
+  const nextXP=XP_LEVELS[level+1]||XP_LEVELS[XP_LEVELS.length-1];
+  const prevXP=XP_LEVELS[level]||0;
+  const pct=Math.min(100,(xp-prevXP)/(nextXP-prevXP)*100);
+  const title=XP_TITLES[level]||XP_TITLES[XP_TITLES.length-1];
+  el.innerHTML=
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
+      +'<span class="xp-badge">⚡ Taso '+(level+1)+' — '+title+'</span>'
+      +'<span style="font-size:11px;color:var(--cyan)">'+xp+' XP</span>'
+    +'</div>'
+    +'<div class="xp-bar-wrap"><div class="xp-bar-fill" style="width:'+pct+'%"></div></div>'
+    +'<div style="font-size:10px;color:var(--text-3);margin-top:4px">'+(nextXP-xp)+' XP seuraavaan tasoon ('+(level+1)+' → '+(level+2)+')</div>';
+}
+
+let _prevXP=0;
+function checkXPToast(){
+  const xp=calcXP();
+  if(_prevXP>0&&xp>_prevXP){
+    const diff=xp-_prevXP;
+    showXPToast('+'+diff+' XP 🎉');
+  }
+  _prevXP=xp;
+}
+function showXPToast(msg){
+  let t=document.getElementById('xpToast');
+  if(!t){ t=document.createElement('div'); t.id='xpToast'; t.className='xp-toast'; document.body.appendChild(t); }
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// ===== SMART SAVINGS CALCULATOR (goals update) =====
+function renderGoals(freePerMonth){
+  const el=document.getElementById('goalsList'); if(!el) return; el.innerHTML='';
+  if(!S.goals||!S.goals.length){
+    el.innerHTML='<div class="tip" style="text-align:center;padding:20px 0">Ei tavoitteita — lisää ensimmäinen! 🎯</div>';
+    return;
+  }
+  S.goals.forEach((g,idx)=>{
+    const target=g.target||0;
+    const saved=g.saved||0;
+    const pct=target>0?Math.min(100,saved/target*100):0;
+    const remaining=Math.max(0,target-saved);
+    const done=pct>=100;
+
+    // Scenario 1: months to goal at current savings rate
+    const monthsLeft=freePerMonth>0&&!done?remaining/freePerMonth:null;
+    // Scenario 2: monthly savings needed to reach goal in X months
+    const targetMonths=g.targetMonths||12;
+    const neededPerMonth=target>0&&targetMonths>0?remaining/targetMonths:null;
+
+    // Compound interest growth (if investing savings)
+    const ret=(g.returnPct||0)/100/12;
+    let ciValue=saved;
+    if(monthsLeft&&ret>0){
+      ciValue=saved*Math.pow(1+ret,Math.ceil(monthsLeft))+freePerMonth*(Math.pow(1+ret,Math.ceil(monthsLeft))-1)/ret;
+    }
+
+    const div=document.createElement('div');
+    div.className='goal-card'+(done?' done':'');
+    div.innerHTML=
+      '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">'
+        +'<div style="display:flex;align-items:center;flex:1;min-width:150px">'
+          +'<span class="goal-emoji">'+(g.emoji||'🎯')+'</span>'
+          +'<div>'
+            +'<input type="text" value="'+esc(g.label||'Tavoite')+'" style="font-size:13px;font-weight:500;padding:0;border-bottom:1px solid var(--border);color:var(--text-1);min-width:120px" onchange="S.goals['+idx+'].label=this.value;save();renderGoals('+freePerMonth+')">'
+          +'</div>'
+        +'</div>'
+        +'<button class="btn-del" onclick="S.goals.splice('+idx+',1);save();renderGoals('+freePerMonth+')">✕</button>'
+      +'</div>'
+      +'<div class="prog-wrap" style="margin-top:10px">'
+        +'<div class="prog-lbl"><span style="color:'+(done?'var(--green)':'var(--text-3)')+'">'+pct.toFixed(1)+'%</span><span style="color:var(--text-3)">'+saved.toFixed(0)+' / '+target.toFixed(0)+' €</span></div>'
+        +'<div class="prog-bar"><div class="prog-fill '+(done?'green':pct>50?'cyan':'orange')+'" style="width:'+pct+'%"></div></div>'
+      +'</div>'
+      // Summat
+      +'<div class="g2" style="margin-top:8px">'
+        +'<div style="font-size:10px;color:var(--text-3)">Säästetty <input type="number" value="'+(saved||'')+'" placeholder="0" style="width:70px;font-size:12px;color:var(--green);text-align:right;padding:0;border-bottom:1px solid var(--border)" oninput="S.goals['+idx+'].saved=parseFloat(this.value)||0;save();renderGoals('+freePerMonth+')" onchange="checkXPToast()"> €</div>'
+        +'<div style="font-size:10px;color:var(--text-3)">Tavoite <input type="number" value="'+(target||'')+'" placeholder="0" style="width:70px;font-size:12px;color:var(--cyan);text-align:right;padding:0;border-bottom:1px solid var(--border)" oninput="S.goals['+idx+'].target=parseFloat(this.value)||0;save();renderGoals('+freePerMonth+')"> €</div>'
+      +'</div>'
+      // Skenaario 1
+      +(done?'<div style="color:var(--green);font-size:12px;margin-top:8px;text-align:center">✅ Tavoite saavutettu!</div>':
+        '<div class="scenario-card" style="margin-top:10px">'
+          +'<div style="font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-3);margin-bottom:4px">📅 Nykyisellä säästövauhdilla</div>'
+          +(freePerMonth>0
+            ?'<div class="scenario-num">'+Math.ceil(monthsLeft||0)+' kk</div>'
+              +'<div style="font-size:11px;color:var(--text-2)">= '+(monthsLeft!=null?Math.ceil(monthsLeft*30.4):0)+' päivää — vapaa '+freePerMonth.toFixed(0)+'€/kk</div>'
+            :'<div style="font-size:11px;color:var(--orange)">Ei vapaata rahaa. Vähennä menoja tai lisää tuloja.</div>')
+        +'</div>'
+      )
+      // Skenaario 2
+      +(!done?
+        '<div class="scenario-card">'
+          +'<div style="font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-3);margin-bottom:6px">🎯 Halusin saavuttaa tavoitteen</div>'
+          +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
+            +'<input type="number" value="'+(g.targetMonths||12)+'" min="1" style="width:55px;text-align:center;border:1px solid var(--border);border-radius:7px;padding:4px;font-size:13px" oninput="S.goals['+idx+'].targetMonths=parseInt(this.value)||12;save();renderGoals('+freePerMonth+')">'
+            +'<span style="color:var(--text-3);font-size:12px">kuukaudessa → tarvitset</span>'
+            +'<span class="scenario-num" style="font-size:1.1rem">'+(neededPerMonth!=null?neededPerMonth.toFixed(0):0)+'€/kk</span>'
+          +'</div>'
+        +'</div>'
+      :'')
+      // Emoji picker
+      +'<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">'
+        +['🎯','✈️','🏠','🚗','💻','🎓','💍','🌴','📱','🐕','🎸','🚀'].map(em=>
+          '<span style="cursor:pointer;font-size:1.1rem;opacity:'+(g.emoji===em?'1':'0.4')+'" onclick="S.goals['+idx+'].emoji=\''+em+'\';save();renderGoals('+freePerMonth+')">'+em+'</span>'
+        ).join('')
+        // Koronkorko-toggle
+        +'<span style="margin-left:auto;font-size:10px;color:var(--text-3);display:flex;align-items:center;gap:5px">📈 Korko% <input type="number" value="'+(g.returnPct||0)+'" placeholder="0" min="0" max="30" style="width:38px;font-size:11px;border-bottom:1px solid var(--border);text-align:center;padding:0" oninput="S.goals['+idx+'].returnPct=parseFloat(this.value)||0;save();renderGoals('+freePerMonth+')">/v</span>'
+      +'</div>';
+    el.appendChild(div);
+  });
+}
+
 // ===== HELP MODAL =====
 const HELP_CONTENT = {
   yleinen:{
     title:'❓ Rahakone — Pikaohjeet',
     rows:[
-      {i:'📊',t:'<strong>Tilanne</strong> — kokonaiskuva: saldo, tulot, menot, tunnusluvut ja menojakauma.'},
-      {i:'💰',t:'<strong>Tulot</strong> — lisää kaikki tulolähteesi. Merkitse saaduksi kun raha on tilillä — saldo päivittyy automaattisesti.'},
-      {i:'🏠',t:'<strong>Menot</strong> — kiinteät arjen kulut. Maksa tililtä tai käteisellä — summa vähennetään saldosta heti.'},
+      {i:'📊',t:'<strong>Tilanne</strong> — kokonaiskuva: saldo, tunnusluvut, talousprofiili (XP-taso), menorakenne ja Takuusäätiön viitearvot.'},
+      {i:'💰',t:'<strong>Tulot</strong> — lisää tulolähteesi. Merkitse "Saatu" kun raha on tilillä — saldo päivittyy automaattisesti.'},
+      {i:'🏠',t:'<strong>Menot</strong> — arjen kiinteät kulut. Valitse kategoria ja tyyppi (kiinteä/muuttuva). Maksa tililtä tai käteisellä.'},
       {i:'🏢',t:'<strong>Yritys</strong> — yrityksen kulut erikseen. <em>Ei korvaa virallista kirjanpitoa.</em>'},
       {i:'📅',t:'<strong>Päiväbudjetti</strong> — kuinka paljon voit käyttää päivässä ennen seuraavaa tuloa.'},
-      {i:'🎯',t:'<strong>Tavoitteet</strong> — aseta säästötavoitteita ja seuraa edistymistä.'},
-      {i:'🔥',t:'<strong>FIRE</strong> — laske milloin voisit saavuttaa taloudellisen vapauden.'},
-      {i:'💎',t:'<strong>Varallisuus</strong> — nettovarallisuus: omaisuus miinus velat.'},
-      {i:'🤖',t:'<strong>AI-sparri</strong> — kopioi budjettisi ja liitä tekoälyyn syvempää analyysia varten.'},
-      {i:'💾',t:'Kaikki tiedot tallennetaan <strong>vain tähän laitteeseen</strong> (selainmuistiin). Varmuuskopioi Vie/Tuo-napeilla alhaalla.'},
+      {i:'🎯',t:'<strong>Suunnitelmat</strong> — jaa tulosi automaattisesti esim. sijoituksiin ja säästöihin prosentein.'},
+      {i:'🤝',t:'<strong>Jako</strong> — laske kulut jaettuna kumppanin tai kämppiksen kanssa haluamallasi suhteella.'},
+      {i:'🗓',t:'<strong>Kalenteri</strong> — näkee tulojen ja menojen eräpäivät kalenterinäkymässä.'},
+      {i:'🎯',t:'<strong>Tavoitteet</strong> — säästötavoitteet kahdella skenaariolla: "kuinka kauan?" ja "paljonko/kk?". Koronkorkolaskenta mukana.'},
+      {i:'🔥',t:'<strong>FIRE</strong> — laske FIRE-numerosi ja vuodet taloudelliseen vapauteen sijoitusten kasvulla.'},
+      {i:'💎',t:'<strong>Varallisuus</strong> — nettovarallisuus: omaisuuserät miinus velat. Tilisaldo synkronoituu automaattisesti.'},
+      {i:'🤖',t:'<strong>AI-sparraaja</strong> — kopioi budjettisi tekoälylle syvempää analyysiä varten.'},
+      {i:'💾',t:'Kaikki tiedot tallennetaan <strong>vain tähän laitteeseen</strong>. Varmuuskopioi ⬇ Vie / ⬆ Tuo -napeilla alhaalla.'},
     ]
   },
   tilanne:{
     title:'📊 Tilanne-välilehti',
     rows:[
-      {i:'💳',t:'Syötä <strong>tilin saldo</strong> ja <strong>käteinen</strong> — nämä ovat oikeasti hallussasi olevat rahat nyt.'},
-      {i:'📈',t:'<strong>Saadut tulot</strong> = tulot jotka olet merkinnyt "Saatu". <strong>Tulossa</strong> = maksamattomat tulot.'},
-      {i:'📉',t:'<strong>Loppukuun ennuste</strong> laskee kaikki kirjatut tulot ja menot kuulle — ei vain jo toteutuneet.'},
-      {i:'💡',t:'<strong>Säästämisaste</strong> = (tulot − menot) / tulot. Tavoittele yli 20%.'},
-      {i:'🍩',t:'Menojakauma-kaavio näyttää mihin rahasi menee. Lisää menoja Menot-välilehdellä.'},
+      {i:'💳',t:'Syötä <strong>tilin saldo</strong> ja <strong>käteinen</strong> — nämä ovat oikeasti hallussasi olevat rahat juuri nyt.'},
+      {i:'📈',t:'<strong>Saadut tulot</strong> = Tulot-välilehdellä "Saatu"-merkityt. <strong>Tulossa</strong> = vielä maksamattomat tulot.'},
+      {i:'📉',t:'<strong>Loppukuun ennuste</strong> laskee kaikki kirjatut tulot ja menot — ei vain jo toteutuneet.'},
+      {i:'💡',t:'<strong>Tunnusluvut</strong>: Säästämisaste = (tulot − menot) / tulot. Tavoittele yli 20%. "Nettoansiot/vuosi" = vapaa raha vuositasolla.'},
+      {i:'⚡',t:'<strong>Talousprofiili</strong> — XP-taso kasvaa oikeista talousteoista: säästäminen, tavoitteiden saavuttaminen, puskurirahaston täyttyminen, FIRE-asteen kasvu.'},
+      {i:'🟣',t:'<strong>Menorakenne</strong> — värikoodattu palkki: kiinteät / muuttuvat / yritys / vapaa raha. Kategorisointi tehdään Menot-välilehdellä.'},
+      {i:'📏',t:'<strong>Viitearvot</strong> — vertaa omia menojasi Takuusäätiön kohtuullisen minimin viitebudjettiin kategorioittain.'},
+      {i:'🍩',t:'<strong>Menojakauma</strong> — ympyräkaavio näyttää mihin rahasi menee. Täydentyy kun lisäät menoja.'},
     ],
-    info:'Saldo päivittyy automaattisesti kun merkitset tuloja saaduiksi tai maksat menoja.'
+    info:'Saldo päivittyy automaattisesti kun merkitset tuloja saaduiksi tai maksat menoja Tili/Käteinen-napeilla.'
   },
   tulot:{
     title:'💰 Tulot-välilehti',
     rows:[
       {i:'➕',t:'Paina <strong>+ Lisää tulolähde</strong> lisätäksesi uuden tulon.'},
-      {i:'↻',t:'Valitse <strong>Joka kuukausi</strong> toistuvalle tulolle (palkka, lapsilisä jne).'},
-      {i:'📅',t:'Valitse kuukausi kertaluonteiselle tulolle — se ei vaikuta muiden kuukausien laskelmiin.'},
-      {i:'✓',t:'Merkitse tulo <strong>Saatu</strong> kun raha on tilillä — se lisätään käytettävissä olevaan saldoon.'},
-      {i:'🗓',t:'<strong>Pv</strong>-kenttä = päivä kuussa, jolloin tulo yleensä saapuu. Näkyy maksukalenterissa.'},
+      {i:'↻',t:'Valitse <strong>Joka kuukausi</strong> toistuvalle tulolle (palkka, etuudet jne). Valitse yksittäinen kuukausi kertaluonteiselle.'},
+      {i:'✓',t:'Merkitse tulo <strong>Saatu</strong> kun raha on tilillä — se lisätään tilisaldoon automaattisesti.'},
+      {i:'⏳',t:'<strong>Tulossa</strong>-tilassa oleva tulo näkyy loppukuun ennusteessa mutta ei käytettävissä olevassa saldossa.'},
+      {i:'🗓',t:'<strong>Pv</strong>-kenttä = päivä kuussa, jolloin tulo yleensä saapuu. Näkyy maksukalenterissa värikoodattuna.'},
     ]
   },
   menot:{
     title:'🏠 Menot-välilehti',
     rows:[
-      {i:'➕',t:'Lisää kaikki toistuvat kiinteät kulut: vuokra, lainanlyhennys, tilaukset jne.'},
-      {i:'↻',t:'<strong>Joka kuukausi</strong> = toistuva kulu. Voit myös valita yksittäisen kuukauden kertaluonteiselle menolle.'},
-      {i:'💳',t:'Kun maksat laskun, paina <strong>Tili</strong> tai <strong>Käteinen</strong> — summa vähennetään saldosta automaattisesti.'},
-      {i:'↩',t:'<strong>Peruuta</strong>-nappi palauttaa summan saldoon, jos merkitsit vahingossa.'},
-      {i:'🗓',t:'<strong>Pv</strong>-kenttä = eräpäivä. Näkyy punaisena kalenterissa ja lajitellaan aikajanalle.'},
+      {i:'➕',t:'Lisää kaikki toistuvat kulut: vuokra, lainanlyhennys, tilaukset jne.'},
+      {i:'🗂',t:'Valitse jokaiselle menolle <strong>kategoria</strong> (Asuminen, Ruoka, Liikkuminen, Terveys, Harrastukset) — näkyy Tilanne-välilehden viitearvovertailussa.'},
+      {i:'🟣🟠',t:'Valitse <strong>tyyppi</strong> — <em>kiinteä</em> (vuokra, vakuutus) tai <em>muuttuva</em> (ruoka, viihde). Klikkaa violettia/oranssia merkkiä vaihtaaksesi. Näkyy menorakenne-palkissa.'},
+      {i:'💳',t:'Kun maksat laskun, paina <strong>💳 Tili</strong> tai <strong>💵 Käteinen</strong> — summa vähennetään oikeasta saldosta automaattisesti.'},
+      {i:'↩',t:'<strong>Peruuta</strong>-nappi palauttaa summan saldoon jos merkitsit vahingossa.'},
+      {i:'🗓',t:'<strong>Pv</strong>-kenttä = eräpäivä. Näkyy kalenterissa ja vaikuttaa päiväbudjettilaskentaan.'},
     ]
   },
   yritys:{
     title:'🏢 Yrityksen kulut',
     rows:[
-      {i:'📋',t:'Listaa yrityksesi toistuvat kulut: hosting, kirjanpito, ohjelmistot jne.'},
-      {i:'💳',t:'Toimii samoin kuin arjen menot — merkitse maksetuksi tililtä tai käteisellä.'},
-      {i:'📊',t:'Yrityksen kulut näkyvät myös menojakaumassa ja FIRE-laskennassa.'},
+      {i:'📋',t:'Listaa yrityksesi toistuvat kulut: hosting, kirjanpito-ohjelma, tilaukset jne.'},
+      {i:'💳',t:'Toimii samoin kuin arjen menot — merkitse maksetuksi tililtä tai käteisellä, summa vähennetään saldosta.'},
+      {i:'📊',t:'Yrityskulut lasketaan mukaan menoihin, menojakaumaan, menorakenteeseen ja FIRE-laskentaan.'},
     ],
     warn:'⚠️ <strong>Huom!</strong> Rahakone on henkilökohtainen budjettiapuri — sitä <strong>ei suositella käytettäväksi viralliseen kirjanpitoon</strong>. Yritystoimintaan tarvitaan asianmukainen kirjanpito-ohjelma tai kirjanpitäjä. Rahakone ei laske ALV:ia, poistoja tai muita kirjanpidon erityisvaatimuksia.'
   },
   paiva:{
     title:'📅 Päiväbudjetti',
     rows:[
-      {i:'💡',t:'<strong>Realistinen päiväbudjetti</strong> = käytettävissä oleva saldo jaettuna päivillä seuraavaan tuloon.'},
-      {i:'🧾',t:'Ennen laskua vähennetään kaikki laskut, jotka erääntyvät ennen seuraavaa tuloa.'},
-      {i:'📊',t:'Taulukko näyttää eri päiväbudjettitasoille, riittääkö raha kuun loppuun.'},
-      {i:'📆',t:'<strong>Tulevat kuukaudet</strong> näyttää jo kirjatut erät tuleville kuukausille.'},
+      {i:'💡',t:'<strong>Realistinen päiväbudjetti</strong> = käytettävissä oleva saldo jaettuna päivillä seuraavaan tuloon. Erääntyvät laskut vähennetään ensin.'},
+      {i:'📊',t:'<strong>Taulukko</strong> näyttää eri päiväbudjettitasoille (5–30 €/pv) riittääkö raha ja mikä on ero nykytilanteeseen.'},
+      {i:'⏳',t:'<strong>Seuraavaan tuloon</strong> -palkki näyttää kuinka suuri osa ajasta on kulunut ennen seuraavaa tuloa.'},
+      {i:'📆',t:'<strong>Tulevat kuukaudet</strong> -osio näyttää jo kirjatut tulot ja menot tuleville kuukausille — ne eivät vaikuta tämän kuun laskelmiin.'},
     ],
-    info:'Päiväbudjetti on arvio — se ei seuraa päivittäistä kulutusta automaattisesti.'
+    info:'Päiväbudjetti on arvio — se ei seuraa päivittäistä kulutusta automaattisesti. Pidä saldo ajan tasalla Tilanne-välilehdellä.'
   },
   suunnitelmat:{
-    title:'🎯 Jako-ohjelma',
+    title:'🎯 Suunnitelmat — Jako-ohjelma',
     rows:[
-      {i:'💡',t:'Jako-ohjelma jakaa kuukausitulosi prosenteilla eri tarkoituksiin.'},
-      {i:'📝',t:'Esimerkki: 10% sijoituksiin, 10% säästöihin, 5% hyväntekeväisyyteen.'},
-      {i:'💰',t:'Euromäärä lasketaan automaattisesti kuukausituloistasi.'},
-      {i:'⚖️',t:'Tavoittele, että jako-ohjelma + menot ≤ 100% tuloista. Ylijäämä on vapaa.'},
+      {i:'💡',t:'<strong>Jako-ohjelma</strong> jakaa kuukausitulosi automaattisesti eri tarkoituksiin prosenteilla.'},
+      {i:'📝',t:'Esimerkki: 10% sijoituksiin, 10% säästöihin, 5% puskurirahastoon — sovellus laskee euroina.'},
+      {i:'➕',t:'Lisää haluamasi jako-erät <strong>+ Lisää</strong> -napilla. Nimeä vapaasti ja aseta prosentti.'},
+      {i:'⚖️',t:'Tavoittele, että jako-ohjelma + kaikki menot ≤ 100% tuloista. "Vapaa käyttö" näyttää ylijäämän.'},
     ]
   },
   jako:{
     title:'🤝 Kulujen jako',
     rows:[
-      {i:'☑️',t:'Valitse listalta kulut, jotka haluat jakaa esim. kumppanin tai kämppiksen kanssa.'},
-      {i:'➕',t:'Lisää myös kuluihin kuulumattomia eriä "Muita jakoon" -kohtaan.'},
-      {i:'⇄',t:'Säädä jakosuhde — oletuksena 50/50. Muuta "Sinä %"-kenttää.'},
-      {i:'💰',t:'Sovellus laskee automaattisesti molempien osuudet yhteensä.'},
+      {i:'☑️',t:'Valitse listalta menot ja yrityskulut, jotka haluat jakaa esim. kumppanin tai kämppiksen kanssa.'},
+      {i:'➕',t:'Lisää myös kuluja jotka eivät ole listalla kohtaan <strong>"Muita jakoon"</strong>.'},
+      {i:'⇄',t:'Säädä jakosuhde <strong>Sinä %</strong> -kentällä — oletuksena 50/50. Kumppanin osuus lasketaan automaattisesti.'},
+      {i:'💰',t:'Yhteissumma ja molempien osuudet näkyvät reaaliajassa alla.'},
     ]
   },
   tavoitteet:{
     title:'🎯 Säästötavoitteet',
     rows:[
-      {i:'➕',t:'Lisää tavoite: nimi, tavoitesumma ja jo säästetty määrä.'},
-      {i:'⏱',t:'Sovellus laskee automaattisesti kuinka monta kuukautta tavoitteeseen menee nykyisellä vapaalla rahalla.'},
-      {i:'🎨',t:'Valitse emoji kuvastamaan tavoitettasi — matka ✈️, asunto 🏠, auto 🚗...'},
-      {i:'✅',t:'Kun edistymispalkki saavuttaa 100%, tavoite merkitään saavutetuksi.'},
-      {i:'💡',t:'Kasvata vapaata rahaa pienentämällä menoja tai lisäämällä tuloja — aika lyhenee!'},
+      {i:'➕',t:'Lisää tavoite <strong>+ Lisää tavoite</strong> -napilla. Anna nimi, tavoitesumma ja jo säästetty määrä.'},
+      {i:'📅',t:'<strong>Skenaario 1</strong>: "Kuinka kauan kestää?" — lasketaan nykyisellä vapaalla rahalla (tulot − menot).'},
+      {i:'🎯',t:'<strong>Skenaario 2</strong>: "Paljonko pitää säästää/kk?" — syötä haluamasi kuukausimäärä, sovellus laskee tarvittavan summan.'},
+      {i:'📈',t:'<strong>Koronkorko %</strong> — syötä vuotuinen tuotto-odotus (esim. 7), jos sijoitat säästöt. Laskee koronkoron vaikutuksen.'},
+      {i:'🎨',t:'Valitse emoji tavoitteen alle kuvastamaan unelmaasi — matka ✈️, asunto 🏠, auto 🚗, koira 🐕...'},
+      {i:'✅',t:'Kun edistymispalkki saavuttaa 100%, tavoite merkitään saavutetuksi — ja saat XP-pisteitä!'},
     ]
   },
   fire:{
     title:'🔥 FIRE-laskenta',
     rows:[
-      {i:'🎯',t:'<strong>FIRE-numero</strong> = kuukausimenot × 12 × 25. Tämä on sijoitettava summa taloudelliseen vapauteen.'},
-      {i:'📈',t:'Perustuu <strong>4% nostosääntöön</strong>: sijoituksistasi voi nostaa 4%/v loputtomiin tilastollisesti.'},
-      {i:'💰',t:'Syötä nykyinen salkku, kuukausisäästö ja tuotto-odotus — sovellus laskee vuodet FIRE:een.'},
-      {i:'⚡',t:'<strong>7% tuotto-odotus</strong> on S&P 500:n historiallinen reaalikorjattu pitkän aikavälin keskiarvo.'},
-      {i:'🛣',t:'Pienennä menoja tai lisää säästöä → FIRE-vuodet vähenevät huomattavasti.'},
+      {i:'🎯',t:'<strong>FIRE-numero</strong> = kuukausimenot × 12 × 25. Tämä on sijoitettava kokonaissumma taloudelliseen vapauteen.'},
+      {i:'📈',t:'Perustuu <strong>4% nostosääntöön</strong>: sijoituksistasi voi nostaa 4% vuodessa tilastollisesti loputtomiin.'},
+      {i:'💰',t:'Syötä <strong>nykyinen sijoitussalkku</strong>, <strong>kuukausisäästö sijoituksiin</strong> ja <strong>tuotto-odotus %</strong> — sovellus laskee vuodet FIRE:een koronkorolla.'},
+      {i:'📊',t:'<strong>FI-aste</strong> = salkku / FIRE-numero. Edistymispalkki näyttää missä kohtaa matkaa olet.'},
+      {i:'⚡',t:'<strong>7% tuotto-odotus</strong> on S&P 500:n historiallinen reaalikorjattu pitkän aikavälin keskiarvo. Muuta kenttää tarpeen mukaan.'},
+      {i:'🛣',t:'Pienennä menoja tai kasvata kuukausisäästöä → FIRE-vuodet vähenevät merkittävästi.'},
     ],
-    warn:'⚠️ FIRE-laskenta on suuntaa-antava arvio. Markkinat vaihtelevat eikä historiallinen tuotto takaa tulevaa. Kysy tarvittaessa neuvoa sijoitusneuvojalta.'
+    warn:'⚠️ FIRE-laskenta on suuntaa-antava arvio. Markkinat vaihtelevat eikä historiallinen tuotto takaa tulevaa. Harkitse sijoitusneuvojan konsultointia ennen suuria päätöksiä.'
   },
   varallisuus:{
     title:'💎 Nettovarallisuus',
     rows:[
-      {i:'🏦',t:'<strong>Omaisuuserät</strong> = kaikki mitä omistat: sijoitukset, asunto, ajoneuvot, säästöt.'},
-      {i:'💳',t:'<strong>Velat</strong> = kaikki mitä olet velkaa: asuntolaina, opintolaina, kulutusluotto.'},
-      {i:'📊',t:'<strong>Nettovarallisuus</strong> = omaisuus − velat. Tavoittele positiivista lukua ja kasvua kuukausittain.'},
-      {i:'💡',t:'Tilisaldo ja käteinen päivittyvät automaattisesti Tilanne-välilehden saldosta.'},
-      {i:'📉',t:'<strong>Velkaaste</strong> = velat / omaisuus. Alle 30% on hyvä, yli 60% on korkea.'},
+      {i:'🏦',t:'<strong>Omaisuuserät</strong> = kaikki mitä omistat: sijoitukset, asunto, ajoneuvot, säästöt jne.'},
+      {i:'💳',t:'<strong>Velat</strong> = kaikki mitä olet velkaa: asuntolaina, opintolaina, kulutusluotto jne.'},
+      {i:'📊',t:'<strong>Nettovarallisuus</strong> = omaisuus − velat. Positiivinen ja kasvava luku on tavoite.'},
+      {i:'🔄',t:'<strong>Tilisaldo ja käteinen</strong> päivittyvät automaattisesti Tilanne-välilehden saldosta — ei tarvitse syöttää erikseen.'},
+      {i:'📉',t:'<strong>Velkaaste</strong> = velat / omaisuus. Alle 30% hyvä, 30–60% kohtalainen, yli 60% korkea.'},
     ]
   },
-  ai:{
-    title:'🤖 AI-sparri',
+  menorakenne:{
+    title:'📊 Menorakenne-palkki',
     rows:[
-      {i:'1️⃣',t:'Valitse ensin kehotetyyppi: yleisanalyysi, säästövinkit, lisätulot tai 3kk strategia.'},
-      {i:'2️⃣',t:'Paina <strong>Kopioi leikepöydälle</strong> — budjettitietosi kopioidaan tekstinä.'},
-      {i:'3️⃣',t:'Avaa <strong>Claude.ai</strong>, ChatGPT tai muu tekoäly ja liitä teksti sinne.'},
-      {i:'🔒',t:'Tietoja ei lähetetä automaattisesti mihinkään — sinä päätät mitä jaat.'},
-      {i:'💡',t:'Voit myös muokata kopioitua tekstiä ennen liittämistä tai lisätä omia kysymyksiä.'},
+      {i:'🟣',t:'<strong>Kiinteät kulut</strong> = toistuvat, ennustettavat menot joihin on vaikea vaikuttaa lyhyellä aikavälillä. Esim. vuokra, vakuutukset, lainanlyhennys.'},
+      {i:'🟠',t:'<strong>Muuttuvat kulut</strong> = vaihtelevat menot joihin pystyt helpoimmin vaikuttamaan. Esim. ruoka, vaatteet, viihde, ravintolat.'},
+      {i:'🔵',t:'<strong>Yrityskulut</strong> näkyvät omana osuutenaan jos sinulla on Yritys-välilehdellä kuluja.'},
+      {i:'🟢',t:'<strong>Vapaa raha</strong> = tulot − kaikki menot. Tämä on säästettävissä tai käytettävissä vapaasti.'},
+      {i:'💡',t:'Vaihda kulun tyyppi klikkaamalla violettia (kiinteä) tai oranssia (muuttuva) -merkkiä suoraan Menot-välilehdellä.'},
+    ],
+    info:'Pyri pitämään kiinteät menot alle 50% tuloista — se antaa joustavuutta muuttuviin kuluihin ja yllättäviin menoihin.'
+  },
+  benchmark:{
+    title:'📏 Takuusäätiön viitearvot',
+    rows:[
+      {i:'📋',t:'Viitearvot perustuvat Takuusäätiön <strong>kohtuullisen minimin viitebudjettiin</strong> yksinasuvalle aikuiselle (2024).'},
+      {i:'🗂',t:'Vertailu toimii vain kategorioille joille olet merkinnyt menoja — lisää kategoriat Menot-välilehdellä.'},
+      {i:'🟢',t:'<strong>Alle viitearvon</strong> = hyvä. Voi tarkoittaa säästöpotentiaalia tai edullista elämäntilannetta.'},
+      {i:'🔴',t:'<strong>Yli viitearvon</strong> = ei välttämättä ongelma, mutta kannattaa miettiä löytyykö säästövaraa.'},
+    ],
+    warn:'⚠️ Viitearvot ovat suuntaa-antavia ja vaihtelevat paikkakunnittain ja elämäntilanteen mukaan. Ne on laadittu yksinasuvalle — perheellisille tai erityistarpeita omaaville ne eivät sovi sellaisenaan.'
+  },
+  ai:{
+    title:'🤖 AI-sparraaja',
+    rows:[
+      {i:'1️⃣',t:'Valitse ensin kehotetyyppi: <strong>Yleisanalyysi</strong>, <strong>Säästövinkit</strong>, <strong>Lisätulot</strong> tai <strong>3kk strategia</strong>.'},
+      {i:'2️⃣',t:'Paina <strong>📋 Kopioi leikepöydälle</strong> — budjettitietosi kopioidaan tekstinä muistiin.'},
+      {i:'3️⃣',t:'Avaa <strong>Claude.ai</strong>, ChatGPT tai muu tekoäly ja liitä (Ctrl+V / ⌘+V) teksti sinne.'},
+      {i:'🔒',t:'Tietoja ei lähetetä automaattisesti mihinkään — sinä päätät mitä jaat ja kenelle.'},
+      {i:'💡',t:'Voit muokata kopioitua tekstiä ennen liittämistä tai lisätä omia tarkentavia kysymyksiä.'},
     ]
   },
 };
@@ -1616,11 +2028,143 @@ function resetAll(){
   location.reload();
 }
 
+// ===== KUUKAUSIHISTORIA =====
+let _histChart = null;
+function saveMonthSnapshot(){
+  const totalInc = S.income.filter(forThisMonth).reduce((s,i)=>s+(i.amount||0),0);
+  const totalExp = [...S.expenses,...S.yritys].filter(forThisMonth).reduce((s,e)=>s+(e.amount||0),0);
+  const jaa = totalInc - totalExp;
+  const saasto = totalInc>0 ? jaa/totalInc*100 : 0;
+  const saldo = (S.saldoTili||0)+(S.saldoKateis||0);
+  const key = MF[CUR_MONTH]+' '+TODAY.getFullYear();
+  // prevent duplicates — overwrite same month
+  const existing = S.history.findIndex(h=>h.key===key);
+  const snap = { key, month:CUR_MONTH, year:TODAY.getFullYear(), tulot:totalInc, menot:totalExp, jaa, saasto, saldo, ts:Date.now() };
+  if(existing>=0) S.history[existing]=snap;
+  else S.history.push(snap);
+  S.history.sort((a,b)=>a.year!==b.year?a.year-b.year:a.month-b.month);
+  save(); renderHistoria();
+  showXPToast('📸 Kuukausi tallennettu! +50 XP');
+}
+
+function renderHistoria(){
+  const el=document.getElementById('histList'); if(!el) return; el.innerHTML='';
+  if(!S.history||!S.history.length){
+    el.innerHTML='<div class="tip" style="text-align:center;padding:24px 0;color:var(--text-3)">Ei vielä tallennettuja kuukausia.<br>Paina "Tallenna kuukausi" ylhäältä.</div>';
+    const cc=document.getElementById('histChartCard'); if(cc) cc.style.display='none';
+    const ct=document.getElementById('histChartTitle'); if(ct) ct.style.display='none';
+    return;
+  }
+  // Show chart
+  const cc=document.getElementById('histChartCard'); if(cc) cc.style.display='block';
+  const ct=document.getElementById('histChartTitle'); if(ct) ct.style.display='block';
+
+  // Cards newest first
+  [...S.history].reverse().forEach((h,idx)=>{
+    const realIdx = S.history.length-1-idx;
+    const card=document.createElement('div');
+    card.className='card'; card.style.marginBottom='8px';
+    const jaaColor = h.jaa>=0?'var(--green)':'var(--red)';
+    const saastoColor = h.saasto>=20?'var(--green)':h.saasto>=10?'var(--cyan)':'var(--orange)';
+    card.innerHTML=
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
+        +'<div style="font-size:13px;font-weight:500;color:var(--text-1)">'+h.key+'</div>'
+        +'<div style="display:flex;align-items:center;gap:8px">'
+          +'<span style="font-size:10px;color:'+saastoColor+'">'+h.saasto.toFixed(1)+'% säästöaste</span>'
+          +'<button class="btn-del" title="Poista" onclick="S.history.splice('+realIdx+',1);save();renderHistoria()">✕</button>'
+        +'</div>'
+      +'</div>'
+      +'<div class="g2">'
+        +'<div class="sb" style="text-align:center"><div class="slbl">Tulot</div><div class="sval cyan">'+fmt(h.tulot)+'</div></div>'
+        +'<div class="sb" style="text-align:center"><div class="slbl">Menot</div><div class="sval red">'+fmt(h.menot)+'</div></div>'
+      +'</div>'
+      +'<div class="g2" style="margin-top:6px">'
+        +'<div class="sb" style="text-align:center"><div class="slbl">Vapaa</div><div class="sval" style="color:'+jaaColor+'">'+fmt(h.jaa)+'</div></div>'
+        +'<div class="sb" style="text-align:center"><div class="slbl">Saldo</div><div class="sval cyan">'+fmt(h.saldo)+'</div></div>'
+      +'</div>'
+      +'<div class="prog-wrap" style="margin-top:10px">'
+        +'<div class="prog-lbl"><span>Säästämisaste</span><span style="color:'+saastoColor+'">'+h.saasto.toFixed(1)+'%</span></div>'
+        +'<div class="prog-bar"><div class="prog-fill" style="width:'+Math.min(100,Math.max(0,h.saasto))+'%;background:'+saastoColor+'"></div></div>'
+      +'</div>';
+    el.appendChild(card);
+  });
+
+  // Render chart
+  const canvas=document.getElementById('histChart'); if(!canvas) return;
+  const labels=S.history.map(h=>h.key.replace(' ','<br>'));
+  const tulotData=S.history.map(h=>h.tulot);
+  const menotData=S.history.map(h=>h.menot);
+  const jaaData=S.history.map(h=>h.jaa);
+  if(_histChart) _histChart.destroy();
+  _histChart = new Chart(canvas,{
+    type:'bar',
+    data:{
+      labels:S.history.map(h=>h.key),
+      datasets:[
+        {label:'Tulot',data:tulotData,backgroundColor:'rgba(0,200,240,0.35)',borderColor:'rgba(0,200,240,0.8)',borderWidth:1.5,borderRadius:4},
+        {label:'Menot',data:menotData,backgroundColor:'rgba(239,68,68,0.3)',borderColor:'rgba(239,68,68,0.7)',borderWidth:1.5,borderRadius:4},
+        {label:'Vapaa',data:jaaData,type:'line',borderColor:'rgba(34,197,94,0.9)',backgroundColor:'rgba(34,197,94,0.08)',borderWidth:2,pointRadius:4,pointBackgroundColor:'rgba(34,197,94,0.9)',tension:0.3,fill:true},
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:true,
+      plugins:{legend:{labels:{color:'rgba(255,255,255,0.5)',font:{size:10}}}},
+      scales:{
+        x:{ticks:{color:'rgba(255,255,255,0.45)',font:{size:9}},grid:{color:'rgba(255,255,255,0.04)'}},
+        y:{ticks:{color:'rgba(255,255,255,0.45)',font:{size:9},callback:v=>v+'€'},grid:{color:'rgba(255,255,255,0.06)'}},
+      }
+    }
+  });
+}
+
+// ===== PIKASTARTTI WIZARD =====
+function wizNext(step){
+  document.querySelectorAll('.wiz-step').forEach(s=>s.style.display='none');
+  const el=document.getElementById('wiz-'+step);
+  if(el) el.style.display='block';
+}
+function wizSkip(){
+  document.getElementById('wizardModal').classList.remove('open');
+  document.body.style.overflow='';
+  S.wizardDone=true; save();
+}
+function wizFinish(){
+  const palkka = parseFloat(document.getElementById('wiz-palkka')?.value)||0;
+  const vuokra = parseFloat(document.getElementById('wiz-vuokra')?.value)||0;
+  const ruoka  = parseFloat(document.getElementById('wiz-ruoka')?.value)||0;
+  const liikk  = parseFloat(document.getElementById('wiz-liikkuminen')?.value)||0;
+  const puh    = parseFloat(document.getElementById('wiz-puhelin')?.value)||0;
+
+  // Set income
+  if(palkka>0){ const i=S.income.find(x=>x.id==='i1'); if(i) i.amount=palkka; }
+  // Set expenses
+  if(vuokra>0){ const e=S.expenses.find(x=>x.id==='e1'); if(e) e.amount=vuokra; }
+  if(puh>0){    const e=S.expenses.find(x=>x.id==='e5'); if(e) e.amount=puh; }
+  // Add ruoka and liikkuminen if filled
+  if(ruoka>0)  S.expenses.push({id:'wiz-r',label:'Ruoka & talous',amount:ruoka,day:0,month:0,paid:false,paidFrom:null,cat:'ruoka',type:'muuttuva'});
+  if(liikk>0)  S.expenses.push({id:'wiz-l',label:'Liikkuminen',amount:liikk,day:0,month:0,paid:false,paidFrom:null,cat:'liikkuminen',type:'muuttuva'});
+
+  S.wizardDone=true; save();
+  document.getElementById('wizardModal').classList.remove('open');
+  document.body.style.overflow='';
+  renderIncome(); renderAll();
+  showXPToast('🚀 Tervetuloa! +100 XP aloituksesta');
+}
+function maybeShowWizard(){
+  if(!S.wizardDone){
+    document.getElementById('wizardModal').classList.add('open');
+    document.body.style.overflow='hidden';
+  }
+}
+
 // ===== INIT =====
 load();
 const sti=document.getElementById('saldoTili');   if(sti&&S.saldoTili)   sti.value=S.saldoTili;
 const ska=document.getElementById('saldoKateis'); if(ska&&S.saldoKateis) ska.value=S.saldoKateis;
 renderIncome(); renderAll();
+renderTOTD();
+// init XP baseline after first render
+setTimeout(()=>{ _prevXP=calcXP(); },500);
 </script>
 </body>
 </html>
