@@ -4,13 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#07070d">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%2300c8f0'/><stop offset='100%25' stop-color='%237c5cbf'/></linearGradient></defs><rect width='100' height='100' rx='22' fill='%2307070d'/><polygon points='58,8 28,54 48,54 42,92 72,46 52,46' fill='url(%23g)'/></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%2300c8f0'/><stop offset='100%25' stop-color='%237c5cbf'/></linearGradient></defs><rect width='180' height='180' rx='40' fill='%2307070d'/><polygon points='105,14 50,97 86,97 75,166 130,83 94,83' fill='url(%23g)'/></svg>">
 <title>RAHAKONE</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%237c5cbf'/><stop offset='100%25' stop-color='%2300c8f0'/></linearGradient></defs><rect width='100' height='100' rx='22' fill='%2307070d'/><rect x='18' y='38' width='64' height='38' rx='7' fill='none' stroke='url(%23g)' stroke-width='5'/><rect x='18' y='44' width='64' height='10' fill='url(%23g)' opacity='.35'/><circle cx='34' cy='57' r='5' fill='url(%23g)'/><rect x='44' y='53' width='22' height='4' rx='2' fill='url(%23g)' opacity='.6'/><path d='M62 38 L62 28 Q62 20 70 20 L82 20' stroke='url(%23g)' stroke-width='4' fill='none' stroke-linecap='round'/><circle cx='82' cy='20' r='5' fill='%2300c8f0'/></svg>">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><radialGradient id='core' cx='38%25' cy='35%25' r='60%25'><stop offset='0%25' stop-color='%23ffffff' stop-opacity='0.95'/><stop offset='30%25' stop-color='%2300e5ff'/><stop offset='65%25' stop-color='%237c5cbf'/><stop offset='100%25' stop-color='%23030310'/></radialGradient><radialGradient id='glow' cx='50%25' cy='50%25' r='50%25'><stop offset='60%25' stop-color='transparent'/><stop offset='100%25' stop-color='%237c5cbf' stop-opacity='0.6'/></radialGradient><filter id='blur'><feGaussianBlur stdDeviation='3'/></filter></defs><circle cx='50' cy='50' r='48' fill='%23030310'/><circle cx='50' cy='50' r='40' fill='url(%23glow)' filter='url(%23blur)'/><circle cx='50' cy='50' r='34' fill='url(%23core)'/><circle cx='38' cy='36' r='8' fill='white' opacity='0.18'/><circle cx='36' cy='34' r='4' fill='white' opacity='0.32'/></svg>">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Rahakone">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><defs><radialGradient id='core' cx='38%25' cy='35%25' r='60%25'><stop offset='0%25' stop-color='%23ffffff' stop-opacity='0.95'/><stop offset='25%25' stop-color='%2300e5ff'/><stop offset='60%25' stop-color='%237c5cbf'/><stop offset='100%25' stop-color='%23030310'/></radialGradient><radialGradient id='glow' cx='50%25' cy='50%25' r='50%25'><stop offset='55%25' stop-color='transparent'/><stop offset='100%25' stop-color='%237c5cbf' stop-opacity='0.7'/></radialGradient><filter id='blur'><feGaussianBlur stdDeviation='6'/></filter></defs><rect width='180' height='180' rx='40' fill='%2307070d'/><circle cx='90' cy='90' r='72' fill='url(%23glow)' filter='url(%23blur)'/><circle cx='90' cy='90' r='60' fill='url(%23core)'/><circle cx='68' cy='64' r='15' fill='white' opacity='0.18'/><circle cx='64' cy='60' r='7' fill='white' opacity='0.35'/></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -528,17 +527,27 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
 <!-- ======= JAKO ======= -->
 <div id="tab-jako" class="tab">
   <div class="sec-title">Kulujen jako <button class="help-btn" onclick="showHelp('jako')">?</button></div>
-  <div class="tip" style="margin-bottom:14px">Jaa mitä kuluja tahansa — esim. asumiskulut, matkakulut, tai vaikka yhteinen viikonloppureissu.</div>
+  <div class="tip" style="margin-bottom:14px">Valitse jaettavat kulut, aseta jakosuhde ja merkitse kumppanin jo maksamat kulut — sovellus laskee automaattisesti kuka on kenelle velkaa.</div>
+
   <div class="card">
     <div class="lbl"><div class="lbl-dot"></div>Valitse jaettavat kulut</div>
     <div id="jakoCheckboxes" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px"></div>
     <hr class="div">
-    <div class="lbl"><div class="lbl-dot"></div>Muita jakoon (ei listalla)</div>
+    <div class="lbl"><div class="lbl-dot"></div>Muita kuluja jakoon</div>
     <div id="jakoExtras"></div>
     <button class="btn btn-sm mt8" onclick="addJakoExtra()">+ Lisää muu kulu</button>
-    <hr class="div">
+  </div>
+
+  <div class="card" style="margin-top:10px;border-color:rgba(124,92,191,0.25)">
+    <div class="lbl"><div class="lbl-dot" style="background:var(--purple)"></div>Kumppanin jo maksamat kulut</div>
+    <div class="tip" style="margin-bottom:10px">Kirjaa tähän kulut joita kumppanisi on jo maksanut yhteisestä laskusta. Ne vähennetään kumppanin osuudesta ja näet tarkan tilanteen.</div>
+    <div id="jakoPartnerPaid"></div>
+    <button class="btn btn-sm mt8" style="border-color:rgba(124,92,191,0.4);color:var(--purple)" onclick="addJakoPartnerPaid()">+ Lisää kumppanin maksu</button>
+  </div>
+
+  <div class="card" style="margin-top:10px">
     <div class="lbl"><div class="lbl-dot"></div>Jakosuhde</div>
-    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:16px">
       <div>
         <div class="saldo-lbl" style="margin-bottom:5px">Sinä %</div>
         <div class="xp-row" style="width:100px">
@@ -551,18 +560,24 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
         <div style="font-size:1.2rem;font-weight:200;color:var(--text-2);padding:8px 0" id="jakoSplitPartner">50%</div>
       </div>
     </div>
+
     <div class="split-grid">
       <div class="split-box">
-        <div style="font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-3);margin-bottom:7px">Sinun osuus</div>
+        <div style="font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-3);margin-bottom:4px">Sinun osuus</div>
         <div style="font-size:1.8rem;font-weight:200;color:var(--cyan)" id="splitMine">0 €</div>
       </div>
       <div class="split-box">
-        <div style="font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-3);margin-bottom:7px">Kumppanin osuus</div>
+        <div style="font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-3);margin-bottom:4px">Kumppanin osuus</div>
         <div style="font-size:1.8rem;font-weight:200;color:var(--purple)" id="splitPartner">0 €</div>
       </div>
     </div>
     <div style="text-align:center;margin-top:9px;font-size:11px;color:var(--text-3)">
       Yhteensä: <span style="color:var(--text-2)" id="splitTotal">0 €</span>
+    </div>
+
+    <div id="jakoSettlement" style="display:none;margin-top:14px;padding:14px;border-radius:10px;border:1px solid rgba(0,200,240,0.2);background:rgba(0,200,240,0.05)">
+      <div style="font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-3);margin-bottom:6px">💳 Tilitys</div>
+      <div style="font-size:1rem;font-weight:300;line-height:1.5" id="jakoSettlementText"></div>
     </div>
   </div>
 </div>
@@ -882,7 +897,7 @@ const DEF = {
     {id:'a2',label:'Sijoitukset',     pct:10},
     {id:'a3',label:'Säästöt',         pct:10},
   ],
-  jakoSelected:[], jakoExtras:[], jakoSplit:50,
+  jakoSelected:[], jakoExtras:[], jakoPartnerPaid:[], jakoSplit:50,
   goals:[],
   assets:[
     {id:'as1',label:'Saldo (tili + käteinen)',amount:0,auto:true},
@@ -1172,9 +1187,52 @@ function renderJako(){
   const fromList=(S.jakoSelected||[]).reduce((s,id)=>{ const it=allItems.find(x=>x.id===id); return s+(it?it.amount||0:0); },0);
   const fromExtras=(S.jakoExtras||[]).reduce((s,e)=>s+(e.amount||0),0);
   const total=fromList+fromExtras;
-  const st=document.getElementById('splitTotal');   if(st) st.textContent=fmt(total);
-  const sm=document.getElementById('splitMine');    if(sm) sm.textContent=fmt(total*pct/100);
-  const spar=document.getElementById('splitPartner');if(spar) spar.textContent=fmt(total*(100-pct)/100);
+  const myShare=total*pct/100;
+  const partnerShare=total*(100-pct)/100;
+  const partnerPaidTotal=(S.jakoPartnerPaid||[]).reduce((s,e)=>s+(e.amount||0),0);
+  const st=document.getElementById('splitTotal');    if(st) st.textContent=fmt(total);
+  const sm=document.getElementById('splitMine');     if(sm) sm.textContent=fmt(myShare);
+  const spar=document.getElementById('splitPartner');if(spar) spar.textContent=fmt(partnerShare);
+  // Settlement
+  const sbox=document.getElementById('jakoSettlement');
+  const stxt=document.getElementById('jakoSettlementText');
+  if(sbox&&stxt){
+    if(total===0){ sbox.style.display='none'; return; }
+    sbox.style.display='block';
+    const stillOwes=partnerShare-partnerPaidTotal;
+    if(partnerPaidTotal===0){
+      sbox.innerHTML='<div style="font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-3);margin-bottom:6px">💳 Tilitys</div><div style="font-size:1rem;font-weight:300;line-height:1.5" id="jakoSettlementText">Kumppani maksaa sinulle <strong style="color:var(--cyan)">'+partnerShare.toFixed(2)+' €</strong></div>';
+      sbox.style.cssText='display:block;margin-top:14px;padding:14px;border-radius:10px;border:1px solid rgba(0,200,240,0.2);background:rgba(0,200,240,0.05)';
+    } else if(stillOwes>0.005){
+      sbox.innerHTML='<div style="font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-3);margin-bottom:6px">💳 Tilitys</div><div style="font-size:1rem;font-weight:300;line-height:1.5">Kumppani on maksanut <strong style="color:var(--purple)">'+partnerPaidTotal.toFixed(2)+' €</strong> — maksaa vielä <strong style="color:var(--cyan)">'+stillOwes.toFixed(2)+' €</strong></div>';
+      sbox.style.cssText='display:block;margin-top:14px;padding:14px;border-radius:10px;border:1px solid rgba(0,200,240,0.2);background:rgba(0,200,240,0.05)';
+    } else if(stillOwes<-0.005){
+      const youOwe=Math.abs(stillOwes);
+      sbox.innerHTML='<div style="font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-3);margin-bottom:6px">💳 Tilitys</div><div style="font-size:1rem;font-weight:300;line-height:1.5">Kumppani maksoi enemmän kuin osuutensa — olet velkaa <strong style="color:var(--orange)">'+youOwe.toFixed(2)+' €</strong></div>';
+      sbox.style.cssText='display:block;margin-top:14px;padding:14px;border-radius:10px;border:1px solid rgba(251,146,60,0.25);background:rgba(251,146,60,0.05)';
+    } else {
+      sbox.innerHTML='<div style="font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-3);margin-bottom:6px">💳 Tilitys</div><div style="font-size:1rem;font-weight:300;line-height:1.5">✓ Tasattu — kumppani on maksanut tarkalleen oman osuutensa</div>';
+      sbox.style.cssText='display:block;margin-top:14px;padding:14px;border-radius:10px;border:1px solid rgba(34,197,94,0.2);background:rgba(34,197,94,0.05)';
+    }
+  }
+}
+function renderJakoPartnerPaid(){
+  const el=document.getElementById('jakoPartnerPaid'); if(!el) return; el.innerHTML='';
+  if(!S.jakoPartnerPaid) S.jakoPartnerPaid=[];
+  S.jakoPartnerPaid.forEach((item,idx)=>{
+    const row=document.createElement('div'); row.className='exp-row';
+    row.innerHTML=
+      '<input type="text" value="'+esc(item.label)+'" placeholder="Mitä kumppani maksoi" style="flex:1;border-right:1px solid var(--border)" onchange="S.jakoPartnerPaid['+idx+'].label=this.value;save();renderJako()">'
+      +'<input type="number" value="'+(item.amount||'')+'" placeholder="0" style="width:75px;text-align:right;color:var(--purple)" oninput="S.jakoPartnerPaid['+idx+'].amount=parseFloat(this.value)||0;save();renderJako()">'
+      +'<span style="color:var(--text-3);font-size:.85rem;padding:0 4px">€</span>'
+      +'<button class="btn-del" style="padding:0 9px" onclick="S.jakoPartnerPaid.splice('+idx+',1);save();renderJakoPartnerPaid();renderJako()">✕</button>';
+    el.appendChild(row);
+  });
+}
+function addJakoPartnerPaid(){
+  if(!S.jakoPartnerPaid) S.jakoPartnerPaid=[];
+  S.jakoPartnerPaid.push({id:'p'+Date.now(),label:'',amount:0});
+  save(); renderJakoPartnerPaid(); renderJako();
 }
 
 // ===== CALENDAR =====
@@ -1514,6 +1572,7 @@ function update(){
   renderCalendar();
   renderJakoCheckboxes();
   renderJakoExtras();
+  renderJakoPartnerPaid();
   renderJako();
   renderTunnusluvut(totalInc, totalExp, jaa);
   renderFIRE();
