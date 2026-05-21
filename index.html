@@ -413,7 +413,17 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
   <!-- Benchmarking -->
   <div class="sec-title">Viitearvot <button class="help-btn" onclick="showHelp('benchmark')">?</button></div>
   <div class="card">
-    <div style="font-size:10px;color:var(--text-3);margin-bottom:8px">Takuusäätiön kohtuullinen minimi — yksinasuva aikuinen</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+      <div style="font-size:10px;color:var(--text-3)">Kohtuullisen minimin viitebudjetti 2025 <span style="color:var(--text-3);font-size:9px">(Kuluttajatutkimuskeskus / HY)</span></div>
+      <select id="benchmarkProfile" class="cat-select" style="font-size:10px;padding:4px 8px" onchange="S.benchmarkProfile=this.value;save();renderBenchmarking()">
+        <option value="yksinasuva">Yksinasuva aikuinen</option>
+        <option value="lapsiperhe_muusuomi">Lapsiperhe — muu Suomi</option>
+        <option value="lapsiperhe_pks">Lapsiperhe — pääkaupunkiseutu</option>
+        <option value="lapsiperhe_hki">Lapsiperhe — Helsinki</option>
+      </select>
+    </div>
+    <div id="benchmark-profile-desc" style="font-size:10px;color:var(--cyan);margin-bottom:8px;line-height:1.5"></div>
+    <div id="benchmark-total" style="font-size:11px;font-weight:500;color:var(--text-2);margin-bottom:10px"></div>
     <div id="benchmark-list"></div>
   </div>
 </div>
@@ -912,6 +922,7 @@ const DEF = {
   firePortfolio:0, fireMonthlySave:0, fireReturn:7,
   history:[],
   wizardDone:false,
+  benchmarkProfile:"lapsiperhe_muusuomi",
 };
 let S = JSON.parse(JSON.stringify(DEF));
 
@@ -948,6 +959,7 @@ function load(){
   if(S.fireReturn==null) S.fireReturn=7;
   if(!S.history) S.history=[];
   if(S.wizardDone==null) S.wizardDone=false;
+  if(!S.benchmarkProfile) S.benchmarkProfile="lapsiperhe_muusuomi";
   // normalize expense categories
   S.expenses.forEach(e=>{ if(!e.cat) e.cat='muut'; if(!e.type) e.type='kiintea'; });
   S.yritys.forEach(e=>{ if(!e.cat) e.cat='yritys'; if(!e.type) e.type='kiintea'; });
@@ -1590,15 +1602,62 @@ function renderAll(){
   update();
 }
 
-// ===== TAKUUSÄÄTIÖ REFERENCE VALUES =====
-// Kohtuullinen minimi — yksinasuva aikuinen (2024 viitearvot, euroa/kk)
-const REFERENCE_VALUES = {
-  asuminen:    { label:'Asuminen',     ref:620,  icon:'🏠' },
-  ruoka:       { label:'Ruoka & talous',ref:310,  icon:'🛒' },
-  liikkuminen: { label:'Liikkuminen',  ref:80,   icon:'🚗' },
-  terveys:     { label:'Terveys',      ref:55,   icon:'💊' },
-  harrastukset:{ label:'Harrastukset', ref:65,   icon:'🎮' },
+// ===== VIITEBUDJETTI-PROFIILIT =====
+// Lähde: Kohtuullisen minimin viitebudjetit 2025, Kuluttajatutkimuskeskus / Helsingin yliopisto
+// Takuusäätiön tiivistelmä: https://www.takuusaatio.fi
+const REFERENCE_PROFILES = {
+  yksinasuva: {
+    label: 'Yksinasuva aikuinen',
+    desc: 'Kohtuullinen minimi — yksinasuva aikuinen, muu Suomi (2025)',
+    total: null, // lasketaan kategorioista
+    cats: {
+      asuminen:    { label:'Asuminen',          ref:620,  icon:'🏠', note:'~60 m², vuokra-asunto, muu Suomi' },
+      ruoka:       { label:'Ruoka & talous',     ref:310,  icon:'🛒' },
+      liikkuminen: { label:'Liikkuminen',        ref:80,   icon:'🚗', note:'Joukkoliikenne / pyörä' },
+      terveys:     { label:'Terveys & hygienia', ref:55,   icon:'💊' },
+      harrastukset:{ label:'Vapaa-aika',         ref:65,   icon:'🎮' },
+    }
+  },
+  lapsiperhe_muusuomi: {
+    label: 'Lapsiperhe — muu Suomi',
+    desc: 'Vanhemmat + alakouluikäinen + 2 teini-ikäistä, muu Suomi (2025)',
+    totalRef: 4174,
+    cats: {
+      asuminen:    { label:'Asuminen',          ref:1098, icon:'🏠', note:'~92 m², vuokra-asunto' },
+      ruoka:       { label:'Ruoka & talous',     ref:1210, icon:'🛒', note:'Sis. käyttötavarat & hygienia' },
+      liikkuminen: { label:'Liikkuminen',        ref:615,  icon:'🚗', note:'Auto tai joukkoliikenne' },
+      terveys:     { label:'Terveys',            ref:63,   icon:'💊' },
+      harrastukset:{ label:'Vapaa-aika',         ref:260,  icon:'🎮' },
+    }
+  },
+  lapsiperhe_pks: {
+    label: 'Lapsiperhe — pääkaupunkiseutu',
+    desc: 'Vanhemmat + alakouluikäinen + 2 teini-ikäistä, pääkaupunkiseutu (2025)',
+    totalRef: 4359,
+    cats: {
+      asuminen:    { label:'Asuminen',          ref:1589, icon:'🏠', note:'~92 m², vuokra-asunto' },
+      ruoka:       { label:'Ruoka & talous',     ref:1210, icon:'🛒' },
+      liikkuminen: { label:'Liikkuminen',        ref:309,  icon:'🚌', note:'Joukkoliikenne / pyörä' },
+      terveys:     { label:'Terveys',            ref:63,   icon:'💊' },
+      harrastukset:{ label:'Vapaa-aika',         ref:260,  icon:'🎮' },
+    }
+  },
+  lapsiperhe_hki: {
+    label: 'Lapsiperhe — Helsinki',
+    desc: 'Vanhemmat + alakouluikäinen + 2 teini-ikäistä, Helsinki (2025)',
+    totalRef: 4567,
+    cats: {
+      asuminen:    { label:'Asuminen',          ref:1797, icon:'🏠', note:'~92 m², vuokra-asunto' },
+      ruoka:       { label:'Ruoka & talous',     ref:1210, icon:'🛒' },
+      liikkuminen: { label:'Liikkuminen',        ref:309,  icon:'🚌', note:'Joukkoliikenne / pyörä' },
+      terveys:     { label:'Terveys',            ref:63,   icon:'💊' },
+      harrastukset:{ label:'Vapaa-aika',         ref:260,  icon:'🎮' },
+    }
+  },
 };
+
+// Takaisinpäin yhteensopivuus — käytetään yksinasuvan arvoja oletuksena
+const REFERENCE_VALUES = REFERENCE_PROFILES.yksinasuva.cats;
 
 function calculateReferenceValues(){
   const catTotals={};
@@ -1636,10 +1695,33 @@ function renderMenorakenne(totalInc, totalExp){
 // ===== BENCHMARKING =====
 function renderBenchmarking(){
   const el=document.getElementById('benchmark-list'); if(!el) return;
+  const profileKey = S.benchmarkProfile || 'yksinasuva';
+  const profile = REFERENCE_PROFILES[profileKey] || REFERENCE_PROFILES.yksinasuva;
+
+  // Sync the select
+  const sel=document.getElementById('benchmarkProfile');
+  if(sel && sel.value !== profileKey) sel.value = profileKey;
+
+  // Update description
+  const descEl=document.getElementById('benchmark-profile-desc');
+  if(descEl) descEl.textContent = profile.desc;
+
+  // Update total reference
+  const totalEl=document.getElementById('benchmark-total');
+  if(totalEl){
+    if(profile.totalRef){
+      totalEl.innerHTML='Viitebudjetti yhteensä: <span style="color:var(--cyan);font-weight:600">'+profile.totalRef+' €/kk</span>';
+    } else {
+      // Calculate from categories for yksinasuva
+      const catSum = Object.values(profile.cats).reduce((s,rv)=>s+rv.ref,0);
+      totalEl.innerHTML='Kategorioiden viitearvot yhteensä: <span style="color:var(--cyan);font-weight:600">'+catSum+' €/kk</span> <span style="font-size:10px;color:var(--text-3)">(+ asuminen vaihtelee)</span>';
+    }
+  }
+
   const cats=calculateReferenceValues();
   el.innerHTML='';
   let anyData=false;
-  Object.entries(REFERENCE_VALUES).forEach(([key,rv])=>{
+  Object.entries(profile.cats).forEach(([key,rv])=>{
     const actual=cats[key]||0;
     if(actual===0) return;
     anyData=true;
@@ -1652,13 +1734,35 @@ function renderBenchmarking(){
         +'<span>'+rv.icon+'</span>'
         +'<div>'
           +'<div style="color:var(--text-1)">'+rv.label+'</div>'
-          +'<div style="font-size:10px;color:var(--text-3)">Viitearvo: '+rv.ref+'€/kk (yksinasuva)</div>'
+          +'<div style="font-size:10px;color:var(--text-3)">Viitearvo: '+rv.ref+'€/kk'+(rv.note?' — '+rv.note:'')+'</div>'
         +'</div>'
       +'</div>'
       +'<div class="bench-diff '+cls+'">'+actual.toFixed(0)+'€<div style="font-size:10px;font-weight:400">'+diffTxt+'</div></div>';
     el.appendChild(row);
   });
-  if(!anyData) el.innerHTML='<div class="tip" style="text-align:center;padding:16px 0">Lisää menoja ja aseta kategoriat Menot-välilehdellä nähdäksesi vertailun. 🎯</div>';
+
+  // Show all reference values (even without actual spend) as a guide
+  if(!anyData){
+    el.innerHTML='';
+    Object.entries(profile.cats).forEach(([key,rv])=>{
+      const row=document.createElement('div'); row.className='bench-row';
+      row.innerHTML=
+        '<div style="display:flex;align-items:center;gap:7px">'
+          +'<span>'+rv.icon+'</span>'
+          +'<div>'
+            +'<div style="color:var(--text-2)">'+rv.label+'</div>'
+            +'<div style="font-size:10px;color:var(--text-3)">Viitearvo: '+rv.ref+'€/kk'+(rv.note?' — '+rv.note:'')+'</div>'
+          +'</div>'
+        +'</div>'
+        +'<div style="font-size:11px;color:var(--text-3)">— €<div style="font-size:9px">ei menoja kirjattu</div></div>';
+      el.appendChild(row);
+    });
+    const hint=document.createElement('div');
+    hint.className='tip';
+    hint.style.cssText='text-align:center;padding:12px 0 2px';
+    hint.textContent='Kirjaa menoja Menot-välilehdellä ja aseta kategoriat nähdäksesi oman tilanteen vertailuna. 🎯';
+    el.appendChild(hint);
+  }
 }
 
 // ===== XP SYSTEM =====
@@ -1843,7 +1947,7 @@ const HELP_CONTENT = {
       {i:'💡',t:'<strong>Tunnusluvut</strong>: Säästämisaste = (tulot − menot) / tulot. Tavoittele yli 20%. "Nettoansiot/vuosi" = vapaa raha vuositasolla.'},
       {i:'⚡',t:'<strong>Talousprofiili</strong> — XP-taso kasvaa oikeista talousteoista: säästäminen, tavoitteiden saavuttaminen, puskurirahaston täyttyminen, FIRE-asteen kasvu.'},
       {i:'🟣',t:'<strong>Menorakenne</strong> — värikoodattu palkki: kiinteät / muuttuvat / yritys / vapaa raha. Kategorisointi tehdään Menot-välilehdellä.'},
-      {i:'📏',t:'<strong>Viitearvot</strong> — vertaa omia menojasi Takuusäätiön kohtuullisen minimin viitebudjettiin kategorioittain.'},
+      {i:'📏',t:'<strong>Viitearvot</strong> — vertaa omia menojasi kohtuullisen minimin viitebudjettiin (2025). Valittavissa yksinasuva tai lapsiperhe eri paikkakunnille.'},
       {i:'🍩',t:'<strong>Menojakauma</strong> — ympyräkaavio näyttää mihin rahasi menee. Täydentyy kun lisäät menoja.'},
     ],
     info:'Saldo päivittyy automaattisesti kun merkitset tuloja saaduiksi tai maksat menoja Tili/Käteinen-napeilla.'
@@ -1951,14 +2055,15 @@ const HELP_CONTENT = {
     info:'Pyri pitämään kiinteät menot alle 50% tuloista — se antaa joustavuutta muuttuviin kuluihin ja yllättäviin menoihin.'
   },
   benchmark:{
-    title:'📏 Takuusäätiön viitearvot',
+    title:'📏 Kohtuullisen minimin viitebudjetti',
     rows:[
-      {i:'📋',t:'Viitearvot perustuvat Takuusäätiön <strong>kohtuullisen minimin viitebudjettiin</strong> yksinasuvalle aikuiselle (2024).'},
-      {i:'🗂',t:'Vertailu toimii vain kategorioille joille olet merkinnyt menoja — lisää kategoriat Menot-välilehdellä.'},
+      {i:'📋',t:'Lähde: <strong>Kuluttajatutkimuskeskus / Helsingin yliopisto</strong> — Kohtuullisen minimin viitebudjetit 2025. Mukana 4 profiilia: yksinasuva aikuinen sekä lapsiperhe (vanhemmat + alakouluikäinen + 2 teini-ikäistä) kolmella paikkakuntatasolla.'},
+      {i:'🏠',t:'Valitse profiilin pudotusvalikosta se, joka vastaa parhaiten omaa tilannettasi. Valinta tallentuu automaattisesti.'},
+      {i:'🗂',t:'Vertailu toimii kategorioille joille olet merkinnyt menoja — lisää kategoriat Menot-välilehdellä.'},
       {i:'🟢',t:'<strong>Alle viitearvon</strong> = hyvä. Voi tarkoittaa säästöpotentiaalia tai edullista elämäntilannetta.'},
       {i:'🔴',t:'<strong>Yli viitearvon</strong> = ei välttämättä ongelma, mutta kannattaa miettiä löytyykö säästövaraa.'},
     ],
-    warn:'⚠️ Viitearvot ovat suuntaa-antavia ja vaihtelevat paikkakunnittain ja elämäntilanteen mukaan. Ne on laadittu yksinasuvalle — perheellisille tai erityistarpeita omaaville ne eivät sovi sellaisenaan.'
+    warn:'⚠️ Viitearvot ovat suuntaa-antavia. Lapsiperheen budjetti (4 174–4 567 €/kk) sisältää asumisen, arkimenot ja liikkumisen mutta ei esim. lasten harrastusmaksuja erikseen.'
   },
   historia:{
     title:'📈 Kuukausihistoria',
