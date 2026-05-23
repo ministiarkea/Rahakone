@@ -1118,6 +1118,55 @@ function addIncome(){
   save(); renderIncome(); update();
 }
 
+// ===== LAPSILISÄLASKURI =====
+// Kela 2025/2026: 1. lapsi 94,88€ / 2. lapsi 104,84€ / 3. lapsi 133,79€ / 4. lapsi 173,24€ / 5.+ 192,69€
+// Yksinhuoltajakorotus 73,30€/lapsi. Alle 3v korotus 26€/lapsi.
+const LAPSILISA_PORTAAT = [94.88, 104.84, 133.79, 173.24, 192.69];
+function laskeLapsilisa(n, alle3, yksinhuoltaja){
+  if(n<=0) return {total:0, erittely:[]};
+  let total=0; const erittely=[];
+  for(let i=0;i<n;i++){
+    const p=i<LAPSILISA_PORTAAT.length?LAPSILISA_PORTAAT[i]:LAPSILISA_PORTAAT[LAPSILISA_PORTAAT.length-1];
+    total+=p;
+    erittely.push((i+1)+'. lapsi: '+p.toFixed(2)+' €');
+  }
+  if(alle3>0){ const l=alle3*26; total+=l; erittely.push('Alle 3v korotus ('+alle3+'x26€): '+l.toFixed(2)+' €'); }
+  if(yksinhuoltaja){ const y=n*73.30; total+=y; erittely.push('Yksinhuoltajakorotus ('+n+'x73,30€): '+y.toFixed(2)+' €'); }
+  return {total, erittely};
+}
+function renderLapsilisa(){
+  const n=S.lapsilisaLapsia||0;
+  const alle3=Math.min(S.lapsilisaAlle3||0,n);
+  const yk=S.lapsilisaYksinhuoltaja||false;
+  const el_n=document.getElementById('ll-maara'); if(el_n) el_n.textContent=n;
+  const el_a=document.getElementById('ll-alle3'); if(el_a) el_a.textContent=alle3;
+  const el_yk=document.getElementById('ll-yksinhuoltaja'); if(el_yk) el_yk.checked=yk;
+  const {total,erittely}=laskeLapsilisa(n,alle3,yk);
+  const el_tot=document.getElementById('ll-total'); if(el_tot) el_tot.textContent=total.toFixed(2)+' €';
+  const el_er=document.getElementById('ll-erittely'); if(el_er) el_er.innerHTML=erittely.join('<br>');
+  const btn=document.getElementById('ll-lisaa-btn'); if(btn) btn.style.display=total>0?'block':'none';
+}
+function lisaaLapsilisaTuloksi(){
+  const n=S.lapsilisaLapsia||0;
+  const alle3=Math.min(S.lapsilisaAlle3||0,n);
+  const yk=S.lapsilisaYksinhuoltaja||false;
+  const {total}=laskeLapsilisa(n,alle3,yk);
+  if(total<=0) return;
+  S.income=S.income.filter(i=>i.label!=='Lapsilisa (Kela)');
+  S.income.push({id:'i'+Date.now(),label:'Lapsilisa (Kela)',amount:Math.round(total*100)/100,day:26,month:0,paid:false});
+  save(); renderIncome(); update();
+  alert('Lapsilisa '+total.toFixed(2)+' eur/kk lisatty tuloksi!');
+}
+function renderElatus(){
+  const s=S.elatusSuunta||'ei';
+  const sel=document.getElementById('elatusSuunta'); if(sel) sel.value=s;
+  const inp=document.getElementById('elatusSum'); if(inp&&S.elatusSum>0) inp.value=S.elatusSum;
+  const info=document.getElementById('elatus-info'); if(!info) return;
+  if(s==='ei'){ info.textContent=''; return; }
+  if(s==='saadaan') info.innerHTML='Muista merkita summa myos Tulolahteet-listaan.';
+  if(s==='maksetaan') info.innerHTML='Muista merkita summa myos Menot-valilehdella.';
+}
+
 // ===== PAY EXPENSE =====
 function payExpense(type, idx, method){
   const arr = type==='arki' ? S.expenses : S.yritys;
