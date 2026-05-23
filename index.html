@@ -452,6 +452,60 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
 <!-- ======= TULOT ======= -->
 <div id="tab-tulot" class="tab">
   <div class="sec-title">Tulolähteet <button class="help-btn" onclick="showHelp('tulot')">?</button></div>
+
+  <!-- Lapsilisälaskuri -->
+  <div class="card card-accent" style="margin-bottom:10px">
+    <div class="lbl"><span class="lbl-dot"></span>Lapsilisälaskuri <span style="font-size:9px;color:var(--text-3);font-weight:400;text-transform:none;letter-spacing:0">(Kela 2025/2026)</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div>
+        <div style="font-size:10px;color:var(--text-3);margin-bottom:4px">Alle 17-v. lapsia</div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <button onclick="S.lapsilisaLapsia=Math.max(0,(S.lapsilisaLapsia||0)-1);save();renderLapsilisa()" style="background:var(--surface-2);border:1px solid var(--border);color:var(--text-1);border-radius:8px;width:28px;height:28px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">−</button>
+          <span id="ll-maara" style="font-size:1.3rem;font-weight:300;min-width:20px;text-align:center">0</span>
+          <button onclick="S.lapsilisaLapsia=Math.min(10,(S.lapsilisaLapsia||0)+1);save();renderLapsilisa()" style="background:var(--surface-2);border:1px solid var(--border);color:var(--text-1);border-radius:8px;width:28px;height:28px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">+</button>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--text-3);margin-bottom:4px">Alle 3-v. lapsia</div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <button onclick="S.lapsilisaAlle3=Math.max(0,(S.lapsilisaAlle3||0)-1);save();renderLapsilisa()" style="background:var(--surface-2);border:1px solid var(--border);color:var(--text-1);border-radius:8px;width:28px;height:28px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">−</button>
+          <span id="ll-alle3" style="font-size:1.3rem;font-weight:300;min-width:20px;text-align:center">0</span>
+          <button onclick="S.lapsilisaAlle3=Math.min(S.lapsilisaLapsia||0,(S.lapsilisaAlle3||0)+1);save();renderLapsilisa()" style="background:var(--surface-2);border:1px solid var(--border);color:var(--text-1);border-radius:8px;width:28px;height:28px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">+</button>
+        </div>
+      </div>
+    </div>
+    <label style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-2);cursor:pointer;margin-bottom:10px">
+      <input type="checkbox" id="ll-yksinhuoltaja" onchange="S.lapsilisaYksinhuoltaja=this.checked;save();renderLapsilisa()" style="accent-color:var(--cyan);width:15px;height:15px">
+      Yksinhuoltajakorotus (+73,30 €/lapsi) <span style="font-size:9px;color:var(--text-3)">— tarkista Kelasta</span>
+    </label>
+    <div style="border-top:1px solid var(--border);padding-top:10px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div id="ll-erittely" style="font-size:10px;color:var(--text-3);line-height:1.7"></div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:9px;color:var(--text-3)">yhteensä/kk</div>
+        <div id="ll-total" style="font-size:1.5rem;font-weight:300;color:var(--green)">0 €</div>
+        <button id="ll-lisaa-btn" onclick="lisaaLapsilisaTuloksi()" style="margin-top:6px;font-size:10px;padding:5px 10px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);color:var(--green);border-radius:8px;cursor:pointer;display:none">+ Lisää tuloksi</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Elatusmaksu -->
+  <div class="card" style="margin-bottom:10px">
+    <div class="lbl"><span class="lbl-dot"></span>Elatusmaksu</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <select id="elatusSuunta" onchange="S.elatusSuunta=this.value;save();renderElatus()" class="cat-select" style="font-size:11px;flex:1">
+        <option value="ei">Ei elatusmaksua</option>
+        <option value="saadaan">Saan elatusmaksua</option>
+        <option value="maksetaan">Maksan elatusmaksua</option>
+      </select>
+      <input type="number" id="elatusSum" placeholder="€/kk" min="0"
+        oninput="S.elatusSum=parseFloat(this.value)||0;save();renderElatus()"
+        style="width:90px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text-1);font-size:13px;font-family:inherit">
+    </div>
+    <div id="elatus-info" style="font-size:10px;color:var(--text-3);margin-top:6px"></div>
+  </div>
+
   <div id="incomeList"></div>
   <button class="btn mt12" onclick="addIncome()">+ Lisää tulolähde</button>
   <hr class="div">
@@ -944,6 +998,8 @@ const DEF = {
   history:[],
   wizardDone:false,
   benchmarkProfile:"lp_kou_kaksi_teinia",
+  lapsilisaLapsia:0, lapsilisaAlle3:0, lapsilisaYksinhuoltaja:false,
+  elatusSuunta:"ei", elatusSum:0,
 };
 let S = JSON.parse(JSON.stringify(DEF));
 
@@ -981,6 +1037,11 @@ function load(){
   if(!S.history) S.history=[];
   if(S.wizardDone==null) S.wizardDone=false;
   if(!S.benchmarkProfile) S.benchmarkProfile="lp_kou_kaksi_teinia";
+  if(S.lapsilisaLapsia==null) S.lapsilisaLapsia=0;
+  if(S.lapsilisaAlle3==null) S.lapsilisaAlle3=0;
+  if(S.lapsilisaYksinhuoltaja==null) S.lapsilisaYksinhuoltaja=false;
+  if(!S.elatusSuunta) S.elatusSuunta="ei";
+  if(S.elatusSum==null) S.elatusSum=0;
   // normalize expense categories
   S.expenses.forEach(e=>{ if(!e.cat) e.cat='muut'; if(!e.type) e.type='kiintea'; });
   S.yritys.forEach(e=>{ if(!e.cat) e.cat='yritys'; if(!e.type) e.type='kiintea'; });
@@ -1045,6 +1106,8 @@ function renderIncome(){
     el.appendChild(div);
   });
   // Totals — only this month
+  renderLapsilisa();
+  renderElatus();
   const rec = S.income.filter(i=>forThisMonth(i)&&itemM(i)===0).reduce((s,i)=>s+(i.amount||0),0);
   const one = S.income.filter(i=>forThisMonth(i)&&itemM(i)===CUR_MONTH).reduce((s,i)=>s+(i.amount||0),0);
   const el2=document.getElementById('inc-recurring'); if(el2) el2.textContent=fmt(rec);
@@ -1817,7 +1880,7 @@ const REFERENCE_PROFILES = {
   // ── MUKAUTETTU: LINNUNPESÄMALLI ──
   linnunpesa_riina: {
     label: '⚠️ Linnunpesämalli — 4 lasta',
-    desc: '⚠️ Teoreettinen laskelma — ei virallinen viitebudjetti. Lähde: Gemini-analyysi / KTK 2025 -raportti. Linnunpesämalli: äiti puolet ajasta Tampereen perheasunnossa (4 lasta, kulut 50/50 exän kanssa) + puolet ajasta Jyväskylän yksiössä (kulut 50/50 poikaystävän kanssa). Lapset: 8v. tyttö, 10v. tyttö, 13v. poika, 18v. tyttö.',
+    desc: '⚠️ Teoreettinen laskelma — ei virallinen viitebudjetti. Lähde: sovellettu KTK 2025 -raportista. Yhtä vanhempaa koskeva laskelma. Linnunpesämalli. Neljä lasta (2 alakouluikäistä ja 2 teini-ikäistä). Lasten kulut 50/50 vanhempien kesken. Toinen asunto (kulut 50/50 kumppanin kanssa). Asunnot keskisuurissa kaupungeissa.',
     totalByArea: { hki: null, pks: null, muu: 2613 },
     cats: {
       asuminen:    { label:'Asuminen (2 kotia, 50%)',  ref:972,  icon:'🏠', note:'Neliö Tampere 50% (649€) + yksiö Jyväskylä 50% (324€)' },
