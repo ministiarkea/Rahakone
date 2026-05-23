@@ -416,10 +416,31 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
       <div style="font-size:10px;color:var(--text-3)">Kohtuullisen minimin viitebudjetti 2025 <span style="color:var(--text-3);font-size:9px">(Kuluttajatutkimuskeskus / HY)</span></div>
       <select id="benchmarkProfile" class="cat-select" style="font-size:10px;padding:4px 8px" onchange="S.benchmarkProfile=this.value;save();renderBenchmarking()">
-        <option value="yksinasuva">Yksinasuva aikuinen</option>
-        <option value="lapsiperhe_muusuomi">Lapsiperhe — muu Suomi</option>
-        <option value="lapsiperhe_pks">Lapsiperhe — pääkaupunkiseutu</option>
-        <option value="lapsiperhe_hki">Lapsiperhe — Helsinki</option>
+        <optgroup label="── Yksin asuvat ──" style="background:#12121e">
+        <option value="yks_mies_alle45">Yksinasuva mies, alle 45 v.</option>
+        <option value="yks_nainen_alle45">Yksinasuva nainen, alle 45 v.</option>
+        <option value="yks_mies_yli65">Yksinasuva mies, yli 65 v. (eläkkeellä)</option>
+        <option value="yks_nainen_yli65">Yksinasuva nainen, yli 65 v. (eläkkeellä)</option>
+        </optgroup>
+        <optgroup label="── Pariskunnat ──" style="background:#12121e">
+        <option value="pari_yli50">Pari, yli 50 v. (molemmat töissä)</option>
+        <option value="pari_toissa_elakkeella">Pari (toinen töissä, toinen eläkkeellä)</option>
+        <option value="pari_elakkeella">Eläkeläispari, yli 65 v.</option>
+        </optgroup>
+        <optgroup label="── Yksinhuoltajat ──" style="background:#12121e">
+        <option value="yh_alle_kou">Yksinhuoltaja + alle kouluikäinen</option>
+        <option value="yh_teini">Yksinhuoltaja + teini-ikäinen</option>
+        <option value="yh_kou_teini">Yksinhuoltaja + alakouluikäinen + teini</option>
+        </optgroup>
+        <optgroup label="── Lapsiperheet (kaksi vanhempaa) ──" style="background:#12121e">
+        <option value="lp_kaksi_pikkua">Vanhemmat + 2 alle kouluikäistä</option>
+        <option value="lp_pikku_kou">Vanhemmat + alle kouluikäinen + alakouluikäinen</option>
+        <option value="lp_kaksi_teinia">Vanhemmat + 2 teini-ikäistä</option>
+        <option value="lp_kou_kaksi_teinia">Vanhemmat + alakouluikäinen + 2 teiniä</option>
+        </optgroup>
+        <optgroup label="── Mukautettu ──" style="background:#12121e">
+        <option value="linnunpesa_riina">⚠️ Linnunpesämalli, 4 lasta (teoreettinen)</option>
+        </optgroup>
       </select>
     </div>
     <div id="benchmark-profile-desc" style="font-size:10px;color:var(--cyan);margin-bottom:8px;line-height:1.5"></div>
@@ -686,7 +707,7 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
   <div class="sec-title mt16">Tiesitkö?</div>
   <div class="card" style="font-size:12px;color:var(--text-2);line-height:1.8">
     🔥 <strong style="color:var(--cyan)">4% sääntö</strong>: Voit nostaa sijoituksistasi 4% vuodessa loputtomiin tilastollisesti turvallisesti.<br>
-    📈 <strong style="color:var(--green)">Koronkorko</strong>: 7%/v tuotto-odotus on S&P 500:n historiallinen reaalikorjattu keskiarvo.<br>
+    📈 <strong style="color:var(--green)">Korkoakorolle</strong>: 7%/v tuotto-odotus on S&P 500:n historiallinen reaalikorjattu keskiarvo.<br>
     ⚡ <strong style="color:var(--orange)">Säästämisaste</strong>: 50% säästämisasteella FIRE saavutetaan ~17 vuodessa nollasta.
   </div>
 </div>
@@ -922,7 +943,7 @@ const DEF = {
   firePortfolio:0, fireMonthlySave:0, fireReturn:7,
   history:[],
   wizardDone:false,
-  benchmarkProfile:"lapsiperhe_muusuomi",
+  benchmarkProfile:"lp_kou_kaksi_teinia",
 };
 let S = JSON.parse(JSON.stringify(DEF));
 
@@ -959,7 +980,7 @@ function load(){
   if(S.fireReturn==null) S.fireReturn=7;
   if(!S.history) S.history=[];
   if(S.wizardDone==null) S.wizardDone=false;
-  if(!S.benchmarkProfile) S.benchmarkProfile="lapsiperhe_muusuomi";
+  if(!S.benchmarkProfile) S.benchmarkProfile="lp_kou_kaksi_teinia";
   // normalize expense categories
   S.expenses.forEach(e=>{ if(!e.cat) e.cat='muut'; if(!e.type) e.type='kiintea'; });
   S.yritys.forEach(e=>{ if(!e.cat) e.cat='yritys'; if(!e.type) e.type='kiintea'; });
@@ -1605,59 +1626,212 @@ function renderAll(){
 // ===== VIITEBUDJETTI-PROFIILIT =====
 // Lähde: Kohtuullisen minimin viitebudjetit 2025, Kuluttajatutkimuskeskus / Helsingin yliopisto
 // Takuusäätiön tiivistelmä: https://www.takuusaatio.fi
+// Kaikki 14 kotitaloustyyppiä — Kuluttajatutkimuskeskus / HY 2025
+// Lähde: Takuusäätiön infograafit https://www.takuusaatio.fi/hallitserahojasi/omien-tulojen-ja-menojen-seuranta/mita-elaminen-maksaa/
+// Kategoriat on yhdistelty alkuperäisistä ryhmistä seuraavasti:
+//   ruoka = Ruoka + Lyhytkestoiset käyttötavarat + Kodinkoneet + Hygienia  (kaikki mitä osuu ruoka-kategoriaan)
+//   terveys = Terveydenhoito
+//   harrastukset = Vapaa-aika ja harrastukset
+//   asuminen = Asuminen + Sähkö ja vakuutukset
+//   liikkuminen = Liikkuminen
+// HUOM: Käyttäjän menot menevät app-kategorioihin. Viitebudjettien kategoriat on sovitettu niihin parhaiten.
+// Koska app:ssa on vain nämä 5 kategoriaa, "ruoka & talous" kattaa laajan erän.
+
 const REFERENCE_PROFILES = {
-  yksinasuva: {
-    label: 'Yksinasuva aikuinen',
-    desc: 'Kohtuullinen minimi — yksinasuva aikuinen, muu Suomi (2025)',
-    total: null, // lasketaan kategorioista
+
+  // ── YKSIN ASUVAT ──
+  yks_mies_alle45: {
+    label: 'Yksinasuva mies, alle 45 v.',
+    desc: 'Yksinasuva, alle 45-vuotias työssä käyvä mies — muu Suomi (2025)',
+    totalByArea: { hki: 1606, pks: 1529, muu: 1292 },
     cats: {
-      asuminen:    { label:'Asuminen',          ref:620,  icon:'🏠', note:'~60 m², vuokra-asunto, muu Suomi' },
-      ruoka:       { label:'Ruoka & talous',     ref:310,  icon:'🛒' },
-      liikkuminen: { label:'Liikkuminen',        ref:80,   icon:'🚗', note:'Joukkoliikenne / pyörä' },
-      terveys:     { label:'Terveys & hygienia', ref:55,   icon:'💊' },
-      harrastukset:{ label:'Vapaa-aika',         ref:65,   icon:'🎮' },
+      asuminen:    { label:'Asuminen',          ref:584,  icon:'🏠', note:'~31 m² yksiö, muu Suomi (546€) + sähkö/vak. 38€' },
+      ruoka:       { label:'Ruoka & talous',     ref:368,  icon:'🛒', note:'Ruoka 312€ + käyttötavarat 22€ + kodinkoneet 32€ + hygienia 40€ — viite/kk' },
+      liikkuminen: { label:'Liikkuminen',        ref:81,   icon:'🚗', note:'Joukkoliikenne / pyörä, muu Suomi' },
+      terveys:     { label:'Terveys',            ref:22,   icon:'💊' },
+      harrastukset:{ label:'Vapaa-aika',         ref:48,   icon:'🎮' },
     }
   },
-  lapsiperhe_muusuomi: {
-    label: 'Lapsiperhe — muu Suomi',
-    desc: 'Vanhemmat + alakouluikäinen + 2 teini-ikäistä, muu Suomi (2025)',
-    totalRef: 4174,
+  yks_nainen_alle45: {
+    label: 'Yksinasuva nainen, alle 45 v.',
+    desc: 'Yksinasuva, alle 45-vuotias työssä käyvä nainen — muu Suomi (2025)',
+    totalByArea: { hki: 1565, pks: 1488, muu: 1251 },
     cats: {
-      asuminen:    { label:'Asuminen',          ref:1098, icon:'🏠', note:'~92 m², vuokra-asunto' },
-      ruoka:       { label:'Ruoka & talous',     ref:1210, icon:'🛒', note:'Sis. käyttötavarat & hygienia' },
-      liikkuminen: { label:'Liikkuminen',        ref:615,  icon:'🚗', note:'Auto tai joukkoliikenne' },
+      asuminen:    { label:'Asuminen',          ref:584,  icon:'🏠', note:'~31 m² yksiö, muu Suomi (546€) + sähkö/vak. 38€' },
+      ruoka:       { label:'Ruoka & talous',     ref:363,  icon:'🛒', note:'Ruoka 256€ + käyttötavarat 22€ + kodinkoneet 32€ + hygienia 52€' },
+      liikkuminen: { label:'Liikkuminen',        ref:81,   icon:'🚗', note:'Joukkoliikenne / pyörä, muu Suomi' },
+      terveys:     { label:'Terveys',            ref:30,   icon:'💊' },
+      harrastukset:{ label:'Vapaa-aika',         ref:48,   icon:'🎮' },
+    }
+  },
+  yks_mies_yli65: {
+    label: 'Yksinasuva mies, yli 65 v. (eläke)',
+    desc: 'Yksinasuva, yli 65-vuotias eläkkeellä oleva mies — muu Suomi (2025)',
+    totalByArea: { hki: 1761, pks: 1661, muu: 1397 },
+    cats: {
+      asuminen:    { label:'Asuminen',          ref:584,  icon:'🏠', note:'~31 m² yksiö, muu Suomi' },
+      ruoka:       { label:'Ruoka & talous',     ref:420,  icon:'🛒', note:'Eläkeläisen ruoka- ja talouskustannukset' },
+      liikkuminen: { label:'Liikkuminen',        ref:81,   icon:'🚗' },
+      terveys:     { label:'Terveys',            ref:80,   icon:'💊', note:'Eläkeläisellä korkeampi terveydenhoitokulu' },
+      harrastukset:{ label:'Vapaa-aika',         ref:55,   icon:'🎮' },
+    }
+  },
+  yks_nainen_yli65: {
+    label: 'Yksinasuva nainen, yli 65 v. (eläke)',
+    desc: 'Yksinasuva, yli 65-vuotias eläkkeellä oleva nainen — muu Suomi (2025)',
+    totalByArea: { hki: 1680, pks: 1580, muu: 1316 },
+    cats: {
+      asuminen:    { label:'Asuminen',          ref:584,  icon:'🏠', note:'~31 m² yksiö, muu Suomi' },
+      ruoka:       { label:'Ruoka & talous',     ref:380,  icon:'🛒' },
+      liikkuminen: { label:'Liikkuminen',        ref:81,   icon:'🚗' },
+      terveys:     { label:'Terveys',            ref:90,   icon:'💊', note:'Eläkeläisellä korkeampi terveydenhoitokulu' },
+      harrastukset:{ label:'Vapaa-aika',         ref:55,   icon:'🎮' },
+    }
+  },
+
+  // ── PARISKUNNAT ──
+  pari_yli50: {
+    label: 'Pari, yli 50 v. (töissä)',
+    desc: 'Yli 50-vuotias työssä käyvä pari — muu Suomi (2025)',
+    totalByArea: { hki: 2756, pks: 2594, muu: 2164 },
+    cats: {
+      asuminen:    { label:'Asuminen',          ref:903,  icon:'🏠', note:'~72 m² kolmio, muu Suomi (844€) + sähkö/vak. 59€' },
+      ruoka:       { label:'Ruoka & talous',     ref:670,  icon:'🛒', note:'Ruoka 567€ + käyttötavarat 32€ + kodinkoneet 39€ + hygienia 82€' },
+      liikkuminen: { label:'Liikkuminen',        ref:154,  icon:'🚗', note:'Joukkoliikenne / pyörä, muu Suomi' },
+      terveys:     { label:'Terveys',            ref:47,   icon:'💊' },
+      harrastukset:{ label:'Vapaa-aika',         ref:97,   icon:'🎮' },
+    }
+  },
+  pari_toissa_elakkeella: {
+    label: 'Pari (toinen töissä, toinen eläkkeellä)',
+    desc: 'Pari: alle 50-v. töissä + yli 65-v. eläkkeellä — muu Suomi (2025)',
+    totalByArea: { hki: 2825, pks: 2665, muu: 2233 },
+    cats: {
+      asuminen:    { label:'Asuminen',          ref:903,  icon:'🏠', note:'~72 m² kolmio, muu Suomi' },
+      ruoka:       { label:'Ruoka & talous',     ref:680,  icon:'🛒' },
+      liikkuminen: { label:'Liikkuminen',        ref:154,  icon:'🚗' },
+      terveys:     { label:'Terveys',            ref:65,   icon:'💊' },
+      harrastukset:{ label:'Vapaa-aika',         ref:97,   icon:'🎮' },
+    }
+  },
+  pari_elakkeella: {
+    label: 'Eläkeläispari, yli 65 v.',
+    desc: 'Yli 65-vuotias eläkkeellä oleva pari — muu Suomi (2025)',
+    totalByArea: { hki: 2825, pks: 2665, muu: 2401 },
+    cats: {
+      asuminen:    { label:'Asuminen',          ref:903,  icon:'🏠', note:'~72 m² kolmio, muu Suomi' },
+      ruoka:       { label:'Ruoka & talous',     ref:680,  icon:'🛒' },
+      liikkuminen: { label:'Liikkuminen',        ref:154,  icon:'🚗' },
+      terveys:     { label:'Terveys',            ref:100,  icon:'💊', note:'Eläkeläisparilla korkeampi terveyskulu' },
+      harrastukset:{ label:'Vapaa-aika',         ref:105,  icon:'🎮' },
+    }
+  },
+
+  // ── YKSINHUOLTAJAT ──
+  yh_alle_kou: {
+    label: 'Yksinhuoltaja + alle kouluikäinen',
+    desc: 'Yksinhuoltajaäiti + alle kouluikäinen lapsi — muu Suomi (2025)',
+    totalByArea: { hki: 1977, pks: 1872, muu: 1573 },
+    cats: {
+      asuminen:    { label:'Asuminen',          ref:708,  icon:'🏠', note:'~50 m² kaksio, muu Suomi (658€) + sähkö/vak. 50€' },
+      ruoka:       { label:'Ruoka & talous',     ref:471,  icon:'🛒', note:'Ruoka 349€ + käyttötavarat 31€ + kodinkoneet 40€ + hygienia 56€' },
+      liikkuminen: { label:'Liikkuminen',        ref:88,   icon:'🚗', note:'Joukkoliikenne / pyörä, muu Suomi' },
+      terveys:     { label:'Terveys',            ref:35,   icon:'💊' },
+      harrastukset:{ label:'Vapaa-aika',         ref:54,   icon:'🎮' },
+    }
+  },
+  yh_teini: {
+    label: 'Yksinhuoltaja + teini-ikäinen',
+    desc: 'Yksinhuoltajaäiti + teini-ikäinen lapsi — muu Suomi (2025)',
+    totalByArea: { hki: 2236, pks: 2131, muu: 1831 },
+    cats: {
+      asuminen:    { label:'Asuminen',          ref:708,  icon:'🏠', note:'~50 m² kaksio, muu Suomi (658€) + sähkö/vak. 50€' },
+      ruoka:       { label:'Ruoka & talous',     ref:607,  icon:'🛒', note:'Ruoka 459€ + käyttötavarat 33€ + kodinkoneet 41€ + hygienia 74€' },
+      liikkuminen: { label:'Liikkuminen',        ref:123,  icon:'🚗', note:'Muu Suomi' },
+      terveys:     { label:'Terveys',            ref:36,   icon:'💊' },
+      harrastukset:{ label:'Vapaa-aika',         ref:100,  icon:'🎮' },
+    }
+  },
+  yh_kou_teini: {
+    label: 'Yksinhuoltaja + alakouluikäinen + teini',
+    desc: 'Yksinhuoltajaäiti + alakouluikäinen + teini-ikäinen — muu Suomi (2025)',
+    totalByArea: { hki: 3048, pks: 2886, muu: 2823 },
+    cats: {
+      asuminen:    { label:'Asuminen',          ref:907,  icon:'🏠', note:'~72 m² kolmio, muu Suomi (844€) + sähkö/vak. 63€' },
+      ruoka:       { label:'Ruoka & talous',     ref:826,  icon:'🛒', note:'Ruoka 635€ + käyttötavarat 44€ + kodinkoneet 57€ + hygienia 91€' },
+      liikkuminen: { label:'Liikkuminen',        ref:516,  icon:'🚗', note:'Auto, muu Suomi' },
+      terveys:     { label:'Terveys',            ref:42,   icon:'💊' },
+      harrastukset:{ label:'Vapaa-aika',         ref:165,  icon:'🎮' },
+    }
+  },
+
+  // ── LAPSIPERHEET (2 vanhempaa) ──
+  lp_kaksi_pikkua: {
+    label: 'Vanhemmat + 2 alle kouluikäistä',
+    desc: 'Äiti, isä + 2 alle kouluikäistä lasta — muu Suomi (2025)',
+    totalByArea: { hki: 3232, pks: 3070, muu: 3001 },
+    cats: {
+      asuminen:    { label:'Asuminen',          ref:912,  icon:'🏠', note:'~72 m² kolmio, muu Suomi (844€) + sähkö/vak. 68€' },
+      ruoka:       { label:'Ruoka & talous',     ref:958,  icon:'🛒', note:'Ruoka 807€ + käyttötavarat 48€ + kodinkoneet 63€ + hygienia 99€' },
+      liikkuminen: { label:'Liikkuminen',        ref:525,  icon:'🚗', note:'Auto, muu Suomi' },
+      terveys:     { label:'Terveys',            ref:55,   icon:'💊' },
+      harrastukset:{ label:'Vapaa-aika',         ref:118,  icon:'🎮' },
+    }
+  },
+  lp_pikku_kou: {
+    label: 'Vanhemmat + alle kouluikäinen + alakouluikäinen',
+    desc: 'Äiti, isä + alle kouluikäinen + alakouluikäinen — muu Suomi (2025)',
+    totalByArea: { hki: 3797, pks: 3589, muu: 3419 },
+    cats: {
+      asuminen:    { label:'Asuminen',          ref:1176, icon:'🏠', note:'~72 m² kolmio, muu Suomi (1098€) + sähkö/vak. 78€' },
+      ruoka:       { label:'Ruoka & talous',     ref:1001, icon:'🛒', note:'Ruoka 844€ + käyttötavarat 48€ + kodinkoneet 64€ + hygienia 104€' },
+      liikkuminen: { label:'Liikkuminen',        ref:552,  icon:'🚗', note:'Auto, muu Suomi' },
+      terveys:     { label:'Terveys',            ref:55,   icon:'💊' },
+      harrastukset:{ label:'Vapaa-aika',         ref:159,  icon:'🎮' },
+    }
+  },
+  lp_kaksi_teinia: {
+    label: 'Vanhemmat + 2 teini-ikäistä',
+    desc: 'Äiti, isä + 2 teini-ikäistä lasta — muu Suomi (2025)',
+    totalByArea: { hki: 4132, pks: 3924, muu: 3745 },
+    cats: {
+      asuminen:    { label:'Asuminen',          ref:1176, icon:'🏠', note:'~92 m² neliö, muu Suomi (1098€) + sähkö/vak. 78€' },
+      ruoka:       { label:'Ruoka & talous',     ref:1225, icon:'🛒', note:'Ruoka 1020€ + käyttötavarat 48€ + kodinkoneet 64€ + hygienia 129€' },
+      liikkuminen: { label:'Liikkuminen',        ref:581,  icon:'🚗', note:'Auto, muu Suomi' },
+      terveys:     { label:'Terveys',            ref:57,   icon:'💊' },
+      harrastukset:{ label:'Vapaa-aika',         ref:195,  icon:'🎮' },
+    }
+  },
+  lp_kou_kaksi_teinia: {
+    label: 'Vanhemmat + alakouluikäinen + 2 teiniä',
+    desc: 'Äiti, isä + alakouluikäinen + 2 teini-ikäistä — muu Suomi (2025)',
+    totalByArea: { hki: 4567, pks: 4359, muu: 4174 },
+    cats: {
+      asuminen:    { label:'Asuminen',          ref:1176, icon:'🏠', note:'~92 m² neliö, muu Suomi (1098€) + sähkö/vak. 78€' },
+      ruoka:       { label:'Ruoka & talous',     ref:1464, icon:'🛒', note:'Ruoka 1210€ + käyttötavarat 55€ + kodinkoneet 68€ + hygienia 144€ + vaatteet 87€' },
+      liikkuminen: { label:'Liikkuminen',        ref:615,  icon:'🚗', note:'Auto, muu Suomi' },
       terveys:     { label:'Terveys',            ref:63,   icon:'💊' },
       harrastukset:{ label:'Vapaa-aika',         ref:260,  icon:'🎮' },
     }
   },
-  lapsiperhe_pks: {
-    label: 'Lapsiperhe — pääkaupunkiseutu',
-    desc: 'Vanhemmat + alakouluikäinen + 2 teini-ikäistä, pääkaupunkiseutu (2025)',
-    totalRef: 4359,
+  // ── MUKAUTETTU: LINNUNPESÄMALLI ──
+  linnunpesa_riina: {
+    label: '⚠️ Linnunpesämalli — 4 lasta',
+    desc: '⚠️ Teoreettinen laskelma — ei virallinen viitebudjetti. Lähde: Gemini-analyysi / KTK 2025 -raportti. Linnunpesämalli: äiti puolet ajasta Tampereen perheasunnossa (4 lasta, kulut 50/50 exän kanssa) + puolet ajasta Jyväskylän yksiössä (kulut 50/50 poikaystävän kanssa). Lapset: 8v. tyttö, 10v. tyttö, 13v. poika, 18v. tyttö.',
+    totalByArea: { hki: null, pks: null, muu: 2613 },
     cats: {
-      asuminen:    { label:'Asuminen',          ref:1589, icon:'🏠', note:'~92 m², vuokra-asunto' },
-      ruoka:       { label:'Ruoka & talous',     ref:1210, icon:'🛒' },
-      liikkuminen: { label:'Liikkuminen',        ref:309,  icon:'🚌', note:'Joukkoliikenne / pyörä' },
-      terveys:     { label:'Terveys',            ref:63,   icon:'💊' },
-      harrastukset:{ label:'Vapaa-aika',         ref:260,  icon:'🎮' },
+      asuminen:    { label:'Asuminen (2 kotia, 50%)',  ref:972,  icon:'🏠', note:'Neliö Tampere 50% (649€) + yksiö Jyväskylä 50% (324€)' },
+      ruoka:       { label:'Ruoka & talous',           ref:624,  icon:'🛒', note:'Omat 368€ + puolet lasten ruoasta ~256€' },
+      liikkuminen: { label:'Liikkuminen',              ref:81,   icon:'🚗', note:'Joukkoliikenne, muu Suomi' },
+      terveys:     { label:'Terveys',                  ref:30,   icon:'💊' },
+      harrastukset:{ label:'Vapaa-aika + lasten kulut',ref:906,  icon:'🎮', note:'Omat 48€ + puolet lasten muista kuluista (vaatteet, harrastukset, terveys ym.) ~858€' },
     }
   },
-  lapsiperhe_hki: {
-    label: 'Lapsiperhe — Helsinki',
-    desc: 'Vanhemmat + alakouluikäinen + 2 teini-ikäistä, Helsinki (2025)',
-    totalRef: 4567,
-    cats: {
-      asuminen:    { label:'Asuminen',          ref:1797, icon:'🏠', note:'~92 m², vuokra-asunto' },
-      ruoka:       { label:'Ruoka & talous',     ref:1210, icon:'🛒' },
-      liikkuminen: { label:'Liikkuminen',        ref:309,  icon:'🚌', note:'Joukkoliikenne / pyörä' },
-      terveys:     { label:'Terveys',            ref:63,   icon:'💊' },
-      harrastukset:{ label:'Vapaa-aika',         ref:260,  icon:'🎮' },
-    }
-  },
+
 };
 
 // Takaisinpäin yhteensopivuus — käytetään yksinasuvan arvoja oletuksena
-const REFERENCE_VALUES = REFERENCE_PROFILES.yksinasuva.cats;
+const REFERENCE_VALUES = REFERENCE_PROFILES.yks_nainen_alle45.cats; // legacy fallback
 
 function calculateReferenceValues(){
   const catTotals={};
@@ -1696,7 +1870,7 @@ function renderMenorakenne(totalInc, totalExp){
 function renderBenchmarking(){
   const el=document.getElementById('benchmark-list'); if(!el) return;
   const profileKey = S.benchmarkProfile || 'yksinasuva';
-  const profile = REFERENCE_PROFILES[profileKey] || REFERENCE_PROFILES.yksinasuva;
+  const profile = REFERENCE_PROFILES[profileKey] || REFERENCE_PROFILES.yks_nainen_alle45;
 
   // Sync the select
   const sel=document.getElementById('benchmarkProfile');
@@ -1709,12 +1883,20 @@ function renderBenchmarking(){
   // Update total reference
   const totalEl=document.getElementById('benchmark-total');
   if(totalEl){
-    if(profile.totalRef){
-      totalEl.innerHTML='Viitebudjetti yhteensä: <span style="color:var(--cyan);font-weight:600">'+profile.totalRef+' €/kk</span>';
+    if(profile.totalByArea){
+      const a=profile.totalByArea;
+      if(a.pks && a.hki){
+        totalEl.innerHTML='Yhteensä/kk: <span style="color:var(--cyan);font-weight:600">'+a.muu+' €</span><span style="font-size:9px;color:var(--text-3)"> muu Suomi</span>'
+          +' · <span style="color:var(--cyan)">'+a.pks+' €</span><span style="font-size:9px;color:var(--text-3)"> pks</span>'
+          +' · <span style="color:var(--cyan)">'+a.hki+' €</span><span style="font-size:9px;color:var(--text-3)"> Helsinki</span>'
+          +'<span style="font-size:9px;color:var(--text-3)"> — kategorialuvut on muu Suomi</span>';
+      } else {
+        totalEl.innerHTML='⚠️ Teoreettinen laskelma — yhteensä noin <span style="color:var(--cyan);font-weight:600">'+a.muu+' €/kk</span>'
+          +'<span style="font-size:9px;color:var(--text-3)"> — ei virallinen viitebudjetti</span>';
+      }
     } else {
-      // Calculate from categories for yksinasuva
       const catSum = Object.values(profile.cats).reduce((s,rv)=>s+rv.ref,0);
-      totalEl.innerHTML='Kategorioiden viitearvot yhteensä: <span style="color:var(--cyan);font-weight:600">'+catSum+' €/kk</span> <span style="font-size:10px;color:var(--text-3)">(+ asuminen vaihtelee)</span>';
+      totalEl.innerHTML='Kategorioiden viitearvot: <span style="color:var(--cyan);font-weight:600">'+catSum+' €/kk</span>';
     }
   }
 
@@ -1906,7 +2088,7 @@ function renderGoals(freePerMonth){
         +['🎯','✈️','🏠','🚗','💻','🎓','💍','🌴','📱','🐕','🎸','🚀'].map(em=>
           '<span style="cursor:pointer;font-size:1.1rem;opacity:'+(g.emoji===em?'1':'0.4')+'" onclick="S.goals['+idx+'].emoji=\''+em+'\';save();renderGoals('+freePerMonth+')">'+em+'</span>'
         ).join('')
-        // Koronkorko-toggle
+        // Korkoakorolle-toggle
         +'<span style="margin-left:auto;font-size:10px;color:var(--text-3);display:flex;align-items:center;gap:5px">📈 Korko% <input type="number" value="'+(g.returnPct||0)+'" placeholder="0" min="0" max="30" style="width:38px;font-size:11px;border-bottom:1px solid var(--border);text-align:center;padding:0" oninput="S.goals['+idx+'].returnPct=parseFloat(this.value)||0;save();renderGoals('+freePerMonth+')">/v</span>'
       +'</div>';
     el.appendChild(div);
@@ -1931,7 +2113,7 @@ const HELP_CONTENT = {
       {i:'🎯',t:'<strong>Suunnitelmat</strong> — jaa tulosi automaattisesti esim. sijoituksiin ja säästöihin prosentein.'},
       {i:'🤝',t:'<strong>Jako</strong> — laske kulut jaettuna kumppanin tai kämppiksen kanssa haluamallasi suhteella.'},
       {i:'🗓',t:'<strong>Kalenteri</strong> — näkee tulojen ja menojen eräpäivät kalenterinäkymässä.'},
-      {i:'🎯',t:'<strong>Tavoitteet</strong> — säästötavoitteet kahdella skenaariolla: "kuinka kauan?" ja "paljonko/kk?". Koronkorkolaskenta mukana.'},
+      {i:'🎯',t:'<strong>Tavoitteet</strong> — säästötavoitteet kahdella skenaariolla: "kuinka kauan?" ja "paljonko/kk?". Korkoakorollelaskenta mukana.'},
       {i:'🔥',t:'<strong>FIRE</strong> — laske FIRE-numerosi ja vuodet taloudelliseen vapauteen sijoitusten kasvulla.'},
       {i:'💎',t:'<strong>Varallisuus</strong> — nettovarallisuus: omaisuuserät miinus velat. Tilisaldo synkronoituu automaattisesti.'},
       {i:'🤖',t:'<strong>AI-sparraaja</strong> — kopioi budjettisi tekoälylle syvempää analyysiä varten.'},
@@ -2016,7 +2198,7 @@ const HELP_CONTENT = {
       {i:'➕',t:'Lisää tavoite <strong>+ Lisää tavoite</strong> -napilla. Anna nimi, tavoitesumma ja jo säästetty määrä.'},
       {i:'📅',t:'<strong>Skenaario 1</strong>: "Kuinka kauan kestää?" — lasketaan nykyisellä vapaalla rahalla (tulot − menot).'},
       {i:'🎯',t:'<strong>Skenaario 2</strong>: "Paljonko pitää säästää/kk?" — syötä haluamasi kuukausimäärä, sovellus laskee tarvittavan summan.'},
-      {i:'📈',t:'<strong>Koronkorko %</strong> — syötä vuotuinen tuotto-odotus (esim. 7), jos sijoitat säästöt. Laskee koronkoron vaikutuksen.'},
+      {i:'📈',t:'<strong>Korkoakorolle %</strong> — syötä vuotuinen tuotto-odotus (esim. 7), jos sijoitat säästöt. Laskee koronkoron vaikutuksen.'},
       {i:'🎨',t:'Valitse emoji tavoitteen alle kuvastamaan unelmaasi — matka ✈️, asunto 🏠, auto 🚗, koira 🐕...'},
       {i:'✅',t:'Kun edistymispalkki saavuttaa 100%, tavoite merkitään saavutetuksi — ja saat XP-pisteitä!'},
     ]
@@ -2063,7 +2245,7 @@ const HELP_CONTENT = {
       {i:'🟢',t:'<strong>Alle viitearvon</strong> = hyvä. Voi tarkoittaa säästöpotentiaalia tai edullista elämäntilannetta.'},
       {i:'🔴',t:'<strong>Yli viitearvon</strong> = ei välttämättä ongelma, mutta kannattaa miettiä löytyykö säästövaraa.'},
     ],
-    warn:'⚠️ Viitearvot ovat suuntaa-antavia. Lapsiperheen budjetti (4 174–4 567 €/kk) sisältää asumisen, arkimenot ja liikkumisen mutta ei esim. lasten harrastusmaksuja erikseen.'
+    warn:'⚠️ Viitearvot ovat suuntaa-antavia — ne kuvaavat kohtuullista minimitasoa. Kategorialuvut on esitetty "muu Suomi" -tasolla; kokonaissummat vaihtelevat alueen mukaan. Valitse profiiliksi se, joka lähimmin vastaa omaa tilannettasi.'
   },
   historia:{
     title:'📈 Kuukausihistoria',
@@ -2110,7 +2292,7 @@ const TIPS=[
   {i:'💡',t:'<strong>Säästämisaste yli 20%</strong> tarkoittaa, että olet oikealla tiellä. Yli 50% on FIRE-vauhti!'},
   {i:'📅',t:'<strong>Automatisoi säästäminen</strong> — siirrä säästöt heti palkanmaksupäivänä, ennen kuin ehdit kuluttaa.'},
   {i:'☕',t:'<strong>Latte-efekti</strong>: 4€ kahvi päivittäin = 1460€ vuodessa. Pienet kulut kertyvät.'},
-  {i:'📈',t:'<strong>Koronkorko</strong>: 200€/kk @ 7%/v kasvaa 240 000€:ksi 30 vuodessa.'},
+  {i:'📈',t:'<strong>Korkoakorolle</strong>: 200€/kk @ 7%/v kasvaa 240 000€:ksi 30 vuodessa.'},
   {i:'🎯',t:'<strong>50/30/20-sääntö</strong>: 50% tarpeisiin, 30% haluihin, 20% säästöihin.'},
   {i:'🔥',t:'<strong>FIRE</strong>: Jokainen säästetty euro on askel lähemmäs taloudellista vapautta.'},
   {i:'💳',t:'<strong>Velkojen korjausjärjestys</strong>: maksa ensin korkokorkein velka pois — säästät eniten.'},
