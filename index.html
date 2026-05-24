@@ -1331,10 +1331,13 @@ function renderJako(){
   const allItems=[...S.expenses,...S.yritys];
   const fromList=(S.jakoSelected||[]).reduce((s,id)=>{ const it=allItems.find(x=>x.id===id); return s+(it?it.amount||0:0); },0);
   const fromExtras=(S.jakoExtras||[]).reduce((s,e)=>s+(e.amount||0),0);
-  const total=fromList+fromExtras;
+  const partnerPaidTotal=(S.jakoPartnerPaid||[]).reduce((s,e)=>s+(e.amount||0),0);
+  // Yhteinen potti = sinun kulusi + kumppanin maksamat kulut
+  const total=fromList+fromExtras+partnerPaidTotal;
   const myShare=total*pct/100;
   const partnerShare=total*(100-pct)/100;
-  const partnerPaidTotal=(S.jakoPartnerPaid||[]).reduce((s,e)=>s+(e.amount||0),0);
+  // Kumppani on jo maksanut partnerPaidTotal, joten hän maksaa vielä:
+  const stillOwesMe=partnerShare-partnerPaidTotal;
   const st=document.getElementById('splitTotal');    if(st) st.textContent=fmt(total);
   const sm=document.getElementById('splitMine');     if(sm) sm.textContent=fmt(myShare);
   const spar=document.getElementById('splitPartner');if(spar) spar.textContent=fmt(partnerShare);
@@ -1344,7 +1347,7 @@ function renderJako(){
   if(sbox&&stxt){
     if(total===0){ sbox.style.display='none'; return; }
     sbox.style.display='block';
-    const stillOwes=partnerShare-partnerPaidTotal;
+    const stillOwes=stillOwesMe;  // kumppanin osuus - jo maksettu
     if(partnerPaidTotal===0){
       sbox.innerHTML='<div style="font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-3);margin-bottom:6px">💳 Tilitys</div><div style="font-size:1rem;font-weight:300;line-height:1.5" id="jakoSettlementText">Kumppani maksaa sinulle <strong style="color:var(--cyan)">'+partnerShare.toFixed(2)+' €</strong></div>';
       sbox.style.cssText='display:block;margin-top:14px;padding:14px;border-radius:10px;border:1px solid rgba(0,200,240,0.2);background:rgba(0,200,240,0.05)';
