@@ -483,7 +483,15 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
         </select>
       </div>
     </div>
-    <div style="border-top:1px solid var(--border);padding-top:10px">
+    <!-- Linnunpesä-toggle: näkyy vain jos lapsia valittu -->
+    <label id="ra-linnunpesa-wrap" style="display:none;align-items:flex-start;gap:8px;margin:10px 0 2px;cursor:pointer;padding:9px 12px;background:rgba(124,92,191,0.07);border:1px solid rgba(124,92,191,0.22);border-radius:9px">
+      <input type="checkbox" id="ra-linnunpesa" onchange="S.ruokaLinnunpesa=this.checked;save();renderRuokaArvio()" style="accent-color:var(--purple);width:15px;height:15px;margin-top:1px;flex-shrink:0">
+      <div>
+        <div style="font-size:11px;color:rgba(180,160,255,0.95);font-weight:500">🪺 Linnunpesämalli</div>
+        <div style="font-size:10px;color:var(--text-3);line-height:1.5;margin-top:2px">Lapset kahden kodin välillä 50/50. Laskee vain sinulle kuuluvan osuuden lasten ruokakuluista.</div>
+      </div>
+    </label>
+    <div style="border-top:1px solid var(--border);padding-top:10px;margin-top:10px">
       <div id="ra-erittely" style="font-size:10px;color:var(--text-3);line-height:1.9;margin-bottom:10px"></div>
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div>
@@ -846,7 +854,7 @@ const DEF={
   benchmarkProfile:"lp_kou_kaksi_teinia",
   lapsilisaLapsia:0,lapsilisaAlle3:0,lapsilisaYksinhuoltaja:false,
   elatusSuunta:"ei",elatusSum:0,
-  ruokaAikuisia:1,ruokaLapsiaAlle10:0,ruokaLapsiaTeini:0,ruokaTaso:"kohtuullinen",
+  ruokaAikuisia:1,ruokaLapsiaAlle10:0,ruokaLapsiaTeini:0,ruokaTaso:"kohtuullinen",ruokaLinnunpesa:false,
 };
 let S=JSON.parse(JSON.stringify(DEF));
 
@@ -876,6 +884,7 @@ function load(){
   if(S.ruokaLapsiaAlle10==null)S.ruokaLapsiaAlle10=0;
   if(S.ruokaLapsiaTeini==null)S.ruokaLapsiaTeini=0;
   if(!S.ruokaTaso)S.ruokaTaso="kohtuullinen";
+  if(S.ruokaLinnunpesa==null)S.ruokaLinnunpesa=false;
   S.expenses.forEach(e=>{if(!e.cat)e.cat='muut';if(!e.type)e.type='kiintea';});
   S.yritys.forEach(e=>{if(!e.cat)e.cat='yritys';if(!e.type)e.type='kiintea';});
 }
@@ -967,28 +976,36 @@ function renderElatus(){
 // ===== RUOKAKULUARVIOINTI =====
 // Perustuu KTK/HY 2025 viitebudjetteihin
 // Aikuinen ~350€/kk, alle 10v lapsi ~120€/kk, teini (10-17v) ~200€/kk
-function laskeRuokaArvio(aikuisia,lapsiaAlle10,lapsiaTeini,taso){
+function laskeRuokaArvio(aikuisia,lapsiaAlle10,lapsiaTeini,taso,linnunpesa){
   const k={min:0.75,kohtuullinen:1.0,normaali:1.25}[taso]||1.0;
-  const at=Math.round(aikuisia*350*k);const lt=Math.round(lapsiaAlle10*120*k);const tt=Math.round(lapsiaTeini*200*k);
+  const at=Math.round(aikuisia*350*k);
+  // Linnunpesässä lapset ovat 50% ajasta — puolet kuluista
+  const lapsiKerroin=linnunpesa?0.5:1.0;
+  const lt=Math.round(lapsiaAlle10*120*k*lapsiKerroin);
+  const tt=Math.round(lapsiaTeini*200*k*lapsiKerroin);
   const total=at+lt+tt;const er=[];
   if(aikuisia>0)er.push(aikuisia+' aikuista × '+(350*k).toFixed(0)+' €/kk = '+at+' €');
-  if(lapsiaAlle10>0)er.push(lapsiaAlle10+' pientä lasta (alle 10v) × '+(120*k).toFixed(0)+' €/kk = '+lt+' €');
-  if(lapsiaTeini>0)er.push(lapsiaTeini+' teiniä (10–17v) × '+(200*k).toFixed(0)+' €/kk = '+tt+' €');
+  if(lapsiaAlle10>0)er.push(lapsiaAlle10+' pientä lasta (alle 10v) × '+(120*k*lapsiKerroin).toFixed(0)+' €/kk = '+lt+' €'+(linnunpesa?' <span style="color:rgba(180,160,255,0.8);font-size:9px">(50% — linnunpesä)</span>':''));
+  if(lapsiaTeini>0)er.push(lapsiaTeini+' teiniä (10–17v) × '+(200*k*lapsiKerroin).toFixed(0)+' €/kk = '+tt+' €'+(linnunpesa?' <span style="color:rgba(180,160,255,0.8);font-size:9px">(50% — linnunpesä)</span>':''));
   return{total,erittely:er};
 }
 function renderRuokaArvio(){
-  const a=S.ruokaAikuisia||1,l=S.ruokaLapsiaAlle10||0,t=S.ruokaLapsiaTeini||0,ts=S.ruokaTaso||'kohtuullinen';
+  const a=S.ruokaAikuisia||1,l=S.ruokaLapsiaAlle10||0,t=S.ruokaLapsiaTeini||0,ts=S.ruokaTaso||'kohtuullinen',lp=S.ruokaLinnunpesa||false;
   const e_a=document.getElementById('ra-aikuisia');if(e_a)e_a.textContent=a;
   const e_l=document.getElementById('ra-lapsia-alle10');if(e_l)e_l.textContent=l;
   const e_t=document.getElementById('ra-lapsia-teini');if(e_t)e_t.textContent=t;
   const sel=document.getElementById('ra-taso');if(sel)sel.value=ts;
-  const{total,erittely}=laskeRuokaArvio(a,l,t,ts);
+  const cb=document.getElementById('ra-linnunpesa');if(cb)cb.checked=lp;
+  // Piilotetaan linnunpesä-toggle jos ei ole lapsia
+  const lpwrap=document.getElementById('ra-linnunpesa-wrap');
+  if(lpwrap)lpwrap.style.display=(l+t>0)?'flex':'none';
+  const{total,erittely}=laskeRuokaArvio(a,l,t,ts,lp);
   const e_tot=document.getElementById('ra-total');if(e_tot)e_tot.textContent=total+' €';
   const e_er=document.getElementById('ra-erittely');
   if(e_er)e_er.innerHTML=erittely.join('<br>')+'<br><span style="color:var(--text-3);font-size:9px">Lähde: KTK/HY 2025 — kohtuullisen minimin viitebudjetti. Sisältää ruoan, hygienian ja käyttötavaroiden arvion.</span>';
 }
 function lisaaRuokaMenoksi(){
-  const{total}=laskeRuokaArvio(S.ruokaAikuisia||1,S.ruokaLapsiaAlle10||0,S.ruokaLapsiaTeini||0,S.ruokaTaso||'kohtuullinen');
+  const{total}=laskeRuokaArvio(S.ruokaAikuisia||1,S.ruokaLapsiaAlle10||0,S.ruokaLapsiaTeini||0,S.ruokaTaso||'kohtuullinen',S.ruokaLinnunpesa||false);
   if(total<=0)return;
   S.expenses=S.expenses.filter(e=>e.id!=='ruoka-arvio-auto');
   S.expenses.push({id:'ruoka-arvio-auto',label:'Ruoka & päivittäistavarat (arvio)',amount:total,day:0,month:0,paid:false,paidFrom:null,cat:'ruoka',type:'muuttuva'});
