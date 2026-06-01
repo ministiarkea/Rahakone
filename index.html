@@ -483,14 +483,29 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
         </select>
       </div>
     </div>
-    <!-- Linnunpesä-toggle: näkyy vain jos lapsia valittu -->
-    <label id="ra-linnunpesa-wrap" style="display:none;align-items:flex-start;gap:8px;margin:10px 0 2px;cursor:pointer;padding:9px 12px;background:rgba(124,92,191,0.07);border:1px solid rgba(124,92,191,0.22);border-radius:9px">
-      <input type="checkbox" id="ra-linnunpesa" onchange="S.ruokaLinnunpesa=this.checked;save();renderRuokaArvio()" style="accent-color:var(--purple);width:15px;height:15px;margin-top:1px;flex-shrink:0">
-      <div>
-        <div style="font-size:11px;color:rgba(180,160,255,0.95);font-weight:500">🪺 Linnunpesämalli</div>
-        <div style="font-size:10px;color:var(--text-3);line-height:1.5;margin-top:2px">Lapset kahden kodin välillä 50/50. Laskee vain sinulle kuuluvan osuuden lasten ruokakuluista.</div>
+    <!-- Jaettu huoltajuus: näkyy vain jos lapsia valittu -->
+    <div id="ra-linnunpesa-wrap" style="display:none;margin:10px 0 2px;padding:11px 13px;background:rgba(124,92,191,0.07);border:1px solid rgba(124,92,191,0.22);border-radius:9px">
+      <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer">
+        <input type="checkbox" id="ra-linnunpesa" onchange="S.ruokaLinnunpesa=this.checked;save();renderRuokaArvio()" style="accent-color:var(--purple);width:15px;height:15px;margin-top:1px;flex-shrink:0">
+        <div>
+          <div style="font-size:11px;color:rgba(180,160,255,0.95);font-weight:500">🪺 Lapset asuvat kahdessa kodissa</div>
+          <div style="font-size:10px;color:var(--text-3);line-height:1.5;margin-top:2px">Laskee vain sinulla vietetyn ajan osuuden lasten ruokakuluista.</div>
+        </div>
+      </label>
+      <div id="ra-lp-saato" style="display:none;margin-top:11px;padding-top:11px;border-top:1px solid rgba(124,92,191,0.2)">
+        <div style="font-size:10px;color:var(--text-3);margin-bottom:7px">Kuinka usein lapset ovat sinulla?</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:11px">
+          <button onclick="setRuokaLpPct(50)" class="ra-lp-chip" data-pct="50" style="font-size:10px;padding:5px 10px;border-radius:20px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--text-3);cursor:pointer;font-family:inherit">Vuoroviikot (50%)</button>
+          <button onclick="setRuokaLpPct(40)" class="ra-lp-chip" data-pct="40" style="font-size:10px;padding:5px 10px;border-radius:20px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--text-3);cursor:pointer;font-family:inherit">Joka viikonloppu (~40%)</button>
+          <button onclick="setRuokaLpPct(20)" class="ra-lp-chip" data-pct="20" style="font-size:10px;padding:5px 10px;border-radius:20px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--text-3);cursor:pointer;font-family:inherit">Joka toinen vkl (~20%)</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <input type="range" id="ra-lp-range" min="0" max="100" step="5" value="50" oninput="S.ruokaLinnunpesaPct=parseInt(this.value);save();renderRuokaArvio()" style="flex:1;accent-color:var(--purple)">
+          <span id="ra-lp-pct" style="font-size:1rem;font-weight:300;color:rgba(180,160,255,0.95);min-width:42px;text-align:right">50%</span>
+        </div>
+        <div style="font-size:9px;color:var(--text-3);margin-top:4px">Osuus lasten ruokakuluista joka jää sinun maksettavaksesi</div>
       </div>
-    </label>
+    </div>
     <div style="border-top:1px solid var(--border);padding-top:10px;margin-top:10px">
       <div id="ra-erittely" style="font-size:10px;color:var(--text-3);line-height:1.9;margin-bottom:10px"></div>
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
@@ -854,7 +869,7 @@ const DEF={
   benchmarkProfile:"lp_kou_kaksi_teinia",
   lapsilisaLapsia:0,lapsilisaAlle3:0,lapsilisaYksinhuoltaja:false,
   elatusSuunta:"ei",elatusSum:0,
-  ruokaAikuisia:1,ruokaLapsiaAlle10:0,ruokaLapsiaTeini:0,ruokaTaso:"kohtuullinen",ruokaLinnunpesa:false,
+  ruokaAikuisia:1,ruokaLapsiaAlle10:0,ruokaLapsiaTeini:0,ruokaTaso:"kohtuullinen",ruokaLinnunpesa:false,ruokaLinnunpesaPct:50,
 };
 let S=JSON.parse(JSON.stringify(DEF));
 
@@ -885,6 +900,7 @@ function load(){
   if(S.ruokaLapsiaTeini==null)S.ruokaLapsiaTeini=0;
   if(!S.ruokaTaso)S.ruokaTaso="kohtuullinen";
   if(S.ruokaLinnunpesa==null)S.ruokaLinnunpesa=false;
+  if(S.ruokaLinnunpesaPct==null)S.ruokaLinnunpesaPct=50;
   S.expenses.forEach(e=>{if(!e.cat)e.cat='muut';if(!e.type)e.type='kiintea';});
   S.yritys.forEach(e=>{if(!e.cat)e.cat='yritys';if(!e.type)e.type='kiintea';});
 }
@@ -976,36 +992,49 @@ function renderElatus(){
 // ===== RUOKAKULUARVIOINTI =====
 // Perustuu KTK/HY 2025 viitebudjetteihin
 // Aikuinen ~350€/kk, alle 10v lapsi ~120€/kk, teini (10-17v) ~200€/kk
-function laskeRuokaArvio(aikuisia,lapsiaAlle10,lapsiaTeini,taso,linnunpesa){
+function laskeRuokaArvio(aikuisia,lapsiaAlle10,lapsiaTeini,taso,linnunpesa,lpPct){
   const k={min:0.75,kohtuullinen:1.0,normaali:1.25}[taso]||1.0;
   const at=Math.round(aikuisia*350*k);
-  // Linnunpesässä lapset ovat 50% ajasta — puolet kuluista
-  const lapsiKerroin=linnunpesa?0.5:1.0;
-  const lt=Math.round(lapsiaAlle10*120*k*lapsiKerroin);
-  const tt=Math.round(lapsiaTeini*200*k*lapsiKerroin);
+  // Jaettu huoltajuus: lasten kuluista jää sinulle vain lpPct % (oletus 50%)
+  const pct=(linnunpesa?(lpPct!=null?lpPct:50):100)/100;
+  const lt=Math.round(lapsiaAlle10*120*k*pct);
+  const tt=Math.round(lapsiaTeini*200*k*pct);
   const total=at+lt+tt;const er=[];
+  const pctTag=linnunpesa?' <span style="color:rgba(180,160,255,0.8);font-size:9px">('+Math.round(pct*100)+'% — sinun osuus)</span>':'';
   if(aikuisia>0)er.push(aikuisia+' aikuista × '+(350*k).toFixed(0)+' €/kk = '+at+' €');
-  if(lapsiaAlle10>0)er.push(lapsiaAlle10+' pientä lasta (alle 10v) × '+(120*k*lapsiKerroin).toFixed(0)+' €/kk = '+lt+' €'+(linnunpesa?' <span style="color:rgba(180,160,255,0.8);font-size:9px">(50% — linnunpesä)</span>':''));
-  if(lapsiaTeini>0)er.push(lapsiaTeini+' teiniä (10–17v) × '+(200*k*lapsiKerroin).toFixed(0)+' €/kk = '+tt+' €'+(linnunpesa?' <span style="color:rgba(180,160,255,0.8);font-size:9px">(50% — linnunpesä)</span>':''));
+  if(lapsiaAlle10>0)er.push(lapsiaAlle10+' pientä lasta (alle 10v) × '+(120*k*pct).toFixed(0)+' €/kk = '+lt+' €'+pctTag);
+  if(lapsiaTeini>0)er.push(lapsiaTeini+' teiniä (10–17v) × '+(200*k*pct).toFixed(0)+' €/kk = '+tt+' €'+pctTag);
   return{total,erittely:er};
 }
+function setRuokaLpPct(pct){S.ruokaLinnunpesaPct=pct;save();renderRuokaArvio();}
 function renderRuokaArvio(){
-  const a=S.ruokaAikuisia||1,l=S.ruokaLapsiaAlle10||0,t=S.ruokaLapsiaTeini||0,ts=S.ruokaTaso||'kohtuullinen',lp=S.ruokaLinnunpesa||false;
+  const a=S.ruokaAikuisia||1,l=S.ruokaLapsiaAlle10||0,t=S.ruokaLapsiaTeini||0,ts=S.ruokaTaso||'kohtuullinen',lp=S.ruokaLinnunpesa||false,lpPct=S.ruokaLinnunpesaPct!=null?S.ruokaLinnunpesaPct:50;
   const e_a=document.getElementById('ra-aikuisia');if(e_a)e_a.textContent=a;
   const e_l=document.getElementById('ra-lapsia-alle10');if(e_l)e_l.textContent=l;
   const e_t=document.getElementById('ra-lapsia-teini');if(e_t)e_t.textContent=t;
   const sel=document.getElementById('ra-taso');if(sel)sel.value=ts;
   const cb=document.getElementById('ra-linnunpesa');if(cb)cb.checked=lp;
-  // Piilotetaan linnunpesä-toggle jos ei ole lapsia
+  // Toggle-laatikko näkyy vain jos lapsia; säätimet näkyvät vain jos toggle päällä
   const lpwrap=document.getElementById('ra-linnunpesa-wrap');
-  if(lpwrap)lpwrap.style.display=(l+t>0)?'flex':'none';
-  const{total,erittely}=laskeRuokaArvio(a,l,t,ts,lp);
+  if(lpwrap)lpwrap.style.display=(l+t>0)?'block':'none';
+  const lpsaato=document.getElementById('ra-lp-saato');
+  if(lpsaato)lpsaato.style.display=(lp&&(l+t>0))?'block':'none';
+  const rng=document.getElementById('ra-lp-range');if(rng)rng.value=lpPct;
+  const pctLbl=document.getElementById('ra-lp-pct');if(pctLbl)pctLbl.textContent=lpPct+'%';
+  // Korosta aktiivinen pikanappi
+  document.querySelectorAll('.ra-lp-chip').forEach(b=>{
+    const on=parseInt(b.dataset.pct)===lpPct;
+    b.style.background=on?'rgba(124,92,191,0.2)':'rgba(255,255,255,0.04)';
+    b.style.borderColor=on?'rgba(124,92,191,0.5)':'var(--border)';
+    b.style.color=on?'rgba(180,160,255,0.95)':'var(--text-3)';
+  });
+  const{total,erittely}=laskeRuokaArvio(a,l,t,ts,lp,lpPct);
   const e_tot=document.getElementById('ra-total');if(e_tot)e_tot.textContent=total+' €';
   const e_er=document.getElementById('ra-erittely');
   if(e_er)e_er.innerHTML=erittely.join('<br>')+'<br><span style="color:var(--text-3);font-size:9px">Lähde: KTK/HY 2025 — kohtuullisen minimin viitebudjetti. Sisältää ruoan, hygienian ja käyttötavaroiden arvion.</span>';
 }
 function lisaaRuokaMenoksi(){
-  const{total}=laskeRuokaArvio(S.ruokaAikuisia||1,S.ruokaLapsiaAlle10||0,S.ruokaLapsiaTeini||0,S.ruokaTaso||'kohtuullinen',S.ruokaLinnunpesa||false);
+  const{total}=laskeRuokaArvio(S.ruokaAikuisia||1,S.ruokaLapsiaAlle10||0,S.ruokaLapsiaTeini||0,S.ruokaTaso||'kohtuullinen',S.ruokaLinnunpesa||false,S.ruokaLinnunpesaPct!=null?S.ruokaLinnunpesaPct:50);
   if(total<=0)return;
   S.expenses=S.expenses.filter(e=>e.id!=='ruoka-arvio-auto');
   S.expenses.push({id:'ruoka-arvio-auto',label:'Ruoka & päivittäistavarat (arvio)',amount:total,day:0,month:0,paid:false,paidFrom:null,cat:'ruoka',type:'muuttuva'});
@@ -1168,22 +1197,41 @@ function renderCalendar(){
 
 function renderDayBudget(){
   const saldo=(S.saldoTili||0)+(S.saldoKateis||0);
-  const nextInc=S.income.filter(i=>forThisMonth(i)&&!i.paid&&i.day>=TODAY_DAY).sort((a,b)=>a.day-b.day)[0];
-  const nextIncDay=nextInc?nextInc.day:DAYS_IN_MONTH+1;
-  const billsBeforeNext=[...S.expenses,...S.yritys].filter(e=>forThisMonth(e)&&!e.paid&&e.day>=TODAY_DAY&&e.day<nextIncDay).reduce((s,e)=>s+(e.amount||0),0);
+  // KORJATTU: seuraava tulo etsitään TULEVAISUUDESTA (day > TODAY_DAY).
+  // Tämän päivän jo saatu tulo ei enää näytä "tänään!" -matkaa.
+  let nextInc=S.income.filter(i=>forThisMonth(i)&&!i.paid&&i.day>TODAY_DAY).sort((a,b)=>a.day-b.day)[0];
+  let daysUntil, nextIncNextMonth=false;
+  if(nextInc){
+    daysUntil=nextInc.day-TODAY_DAY;
+  } else {
+    // Ei enää maksamattomia tuloja tässä kuussa → ensi kuun ensimmäinen toistuva tulo
+    const recurringIncs=S.income.filter(i=>itemM(i)===0&&(i.amount||0)>0).sort((a,b)=>a.day-b.day);
+    if(recurringIncs.length>0){
+      nextInc=recurringIncs[0];
+      nextIncNextMonth=true;
+      daysUntil=(DAYS_IN_MONTH-TODAY_DAY)+nextInc.day;
+    }
+  }
+  const nextIncDay=nextInc?(nextIncNextMonth?DAYS_IN_MONTH+1+nextInc.day:nextInc.day):DAYS_IN_MONTH+1;
+  // Laskut ennen seuraavaa tuloa: tämän kuun maksamattomat day>=TODAY_DAY (ja ennen seuraavaa tuloa jos se on tässä kuussa)
+  const billsBeforeNext=[...S.expenses,...S.yritys].filter(e=>{
+    if(!forThisMonth(e)||e.paid||e.day<TODAY_DAY)return false;
+    return nextIncNextMonth?true:e.day<nextInc.day;
+  }).reduce((s,e)=>s+(e.amount||0),0);
   const spendable=Math.max(0,saldo-billsBeforeNext);
   if(nextInc){
-    const daysUntil=nextInc.day-TODAY_DAY;const divisor=Math.max(1,daysUntil);const perDay=spendable/divisor;
+    const divisor=Math.max(1,daysUntil);const perDay=spendable/divisor;
     const el=document.getElementById('pb-realday');if(el){el.textContent=perDay.toFixed(2)+' €/pv';el.className='big-num '+(perDay<5?'red':perDay<15?'orange':'green');}
-    const note=document.getElementById('pb-realnote');if(note)note.textContent=saldo.toFixed(0)+'€ saldo'+(billsBeforeNext>0?' − '+billsBeforeNext.toFixed(0)+'€ laskut':'')+' = '+spendable.toFixed(0)+'€ ÷ '+divisor+' pv → '+nextInc.label+' '+nextInc.day+'. pv'+(daysUntil===0?' (tänään!)':'');
-    const passed=nextInc.day>0?Math.max(0,Math.min(100,(nextInc.day-daysUntil)/nextInc.day*100)):0;
-    const lbl=document.getElementById('nextIncLabel');if(lbl)lbl.textContent=nextInc.label+': '+(daysUntil===0?'tänään!':daysUntil+' pv');
-    const bar=document.getElementById('nextIncBar');if(bar)bar.style.width=passed+'%';
+    const kuvaus=nextIncNextMonth?nextInc.label+' '+nextInc.day+'. pv (ensi kk)':nextInc.label+' '+nextInc.day+'. pv';
+    const note=document.getElementById('pb-realnote');if(note)note.textContent=saldo.toFixed(0)+'€ saldo'+(billsBeforeNext>0?' − '+billsBeforeNext.toFixed(0)+'€ laskut':'')+' = '+spendable.toFixed(0)+'€ ÷ '+divisor+' pv → '+kuvaus;
+    const passed=daysUntil>0?Math.max(0,Math.min(100,(1-daysUntil/(daysUntil+1))*100)):100;
+    const lbl=document.getElementById('nextIncLabel');if(lbl)lbl.textContent=nextInc.label+': '+daysUntil+' pv'+(nextIncNextMonth?' (ensi kk)':'');
+    const bar=document.getElementById('nextIncBar');if(bar)bar.style.width=Math.max(8,100-Math.min(100,daysUntil*3))+'%';
   } else {
     const perDay=DAYS_LEFT>0?spendable/DAYS_LEFT:0;
     const el=document.getElementById('pb-realday');if(el){el.textContent=perDay.toFixed(2)+' €/pv';el.className='big-num '+(perDay<5?'red':perDay<15?'orange':'green');}
     const note=document.getElementById('pb-realnote');if(note)note.textContent=spendable.toFixed(0)+'€ ÷ '+DAYS_LEFT+' pv jäljellä kuussa';
-    const lbl=document.getElementById('nextIncLabel');if(lbl)lbl.textContent='Ei tulevia tuloja tässä kuussa';
+    const lbl=document.getElementById('nextIncLabel');if(lbl)lbl.textContent='Ei tulevia tuloja';
     const bar=document.getElementById('nextIncBar');if(bar)bar.style.width='100%';
   }
   const monthInc=S.income.filter(forThisMonth).reduce((s,i)=>s+(i.amount||0),0);
