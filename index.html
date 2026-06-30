@@ -580,6 +580,15 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
   <div class="sec-title">Kuukausi kerrallaan</div>
   <div id="fcMonths"></div>
 
+  <div class="sec-title">Päivärahabudjetti (seuraavat 30 pv)</div>
+  <div class="card card-accent">
+    <div class="lbl"><div class="lbl-dot"></div>Käytettävissä per päivä</div>
+    <div class="big-num green" id="pb30-num">0 € / pv</div>
+    <div class="tip mt8" id="pb30-break"></div>
+    <div class="tip mt8" id="pb30-food" style="color:var(--text-2)"></div>
+    <div id="pb30-verdict"></div>
+  </div>
+
   <div class="sec-title">Nyt: ennen seuraavaa tuloa</div>
   <div class="card card-accent">
     <div class="g2" style="margin-bottom:6px">
@@ -1299,6 +1308,57 @@ function buildForecast(monthsAhead){
   return {startBal,points,months,min:gMin,events};
 }
 
+// Rullaava päivärahabudjetti: seuraavat 30 pv tästä päivästä, kuukausirajan yli.
+// Jäljelle jäävä raha (saldo + tulot − laskut − muuttuvat − puskuri) jaettuna 30 päivälle.
+function compute30dayBudget(){
+  const W=30;
+  const startBal=(S.saldoTili||0)+(S.saldoKateis||0);
+  const buffer=S.forecastBuffer||0;
+  const today=new Date(CUR_YEAR,TODAY.getMonth(),TODAY_DAY);
+  const end=new Date(CUR_YEAR,TODAY.getMonth(),TODAY_DAY+W-1);
+  // Päivätyn erän esiintymät ikkunassa (toistuva voi osua 0, 1 tai 2 kertaa)
+  function occ(item){
+    const res=[];const m=itemM(item);const dy=parseInt(item.day)||0;if(dy<1)return res;
+    const pushOcc=(y,mo)=>{const dim=new Date(y,mo+1,0).getDate();let d=Math.min(dy,dim);let o=new Date(y,mo,d);
+      const isCur=(y===CUR_YEAR&&mo===TODAY.getMonth());
+      if(isCur&&item.paid)return;            // jo maksettu/saatu kuluvassa kuussa -> jo saldossa
+      if(isCur&&!item.paid&&o<today)o=today; // erääntynyt mutta maksamatta -> erääntyy nyt
+      if(o>=today&&o<=end)res.push(o);};
+    if(m===0){for(let c=new Date(today.getFullYear(),today.getMonth(),1);c<=end;c=new Date(c.getFullYear(),c.getMonth()+1,1))pushOcc(c.getFullYear(),c.getMonth());}
+    else{const p=resolvePeriod(item);if(p)pushOcc(p.y,p.m-1);}
+    return res;
+  }
+  let inc=0,fixedExp=0,varExp=0,foodAmt=0;
+  S.income.forEach(i=>{if((i.amount||0)===0)return;const dy=parseInt(i.day)||0;
+    if(dy<1){if(itemM(i)===0)inc+=i.amount;}
+    else inc+=occ(i).length*(i.amount||0);});
+  [...S.expenses,...S.yritys].forEach(e=>{if((e.amount||0)===0)return;const dy=parseInt(e.day)||0;
+    if(dy<1){ // päivätön muuttuva (esim. ruoka-arvio): kk-summa kerran 30 pv ikkunassa
+      const m=itemM(e);let include=false;
+      if(m===0)include=true;
+      else{const p=resolvePeriod(e);if(p){const ms=new Date(p.y,p.m-1,1),me=new Date(p.y,p.m,0);if(me>=today&&ms<=end)include=true;}}
+      if(include){varExp+=e.amount;if(e.cat==='ruoka')foodAmt+=e.amount;}
+    } else fixedExp+=occ(e).length*(e.amount||0);
+  });
+  const pot=startBal+inc-fixedExp-varExp-buffer;
+  return {W,startBal,inc,fixedExp,varExp,foodAmt,buffer,pot,perDay:pot/W,end};
+}
+function render30dayBudget(){
+  const b=compute30dayBudget();
+  const num=document.getElementById('pb30-num');
+  if(num){if(b.pot>=0){num.textContent=eur(b.perDay)+' / pv';num.className='big-num '+(b.perDay<5?'red':b.perDay<15?'orange':'green');}
+    else{num.textContent=eur(0)+' / pv';num.className='big-num red';}}
+  const brk=document.getElementById('pb30-break');
+  if(brk)brk.innerHTML='Saldo '+eur(b.startBal)+'  +  tulot 30 pv '+eur(b.inc)+'  −  laskut '+eur(b.fixedExp)+(b.varExp>0?'  −  muuttuvat '+eur(b.varExp):'')+(b.buffer>0?'  −  puskuri '+eur(b.buffer):'')+'  =  '+eur(b.pot)+'   ÷ 30 pv';
+  const food=document.getElementById('pb30-food');
+  if(food)food.innerHTML=(b.foodAmt>0)
+    ? '🛒 Ruoka-arvio mukana laskuissa ('+eur(b.foodAmt)+'/kk), joten tämä päiväraha on muuhun kulutukseen ruoan päälle.'
+    : '🛒 Ruokaa ei ole eritelty omaksi menoksi, joten tämä päiväraha kattaa myös ruoan. Halutessasi voit eritellä sen Menot-välilehden ruokalaskurilla, jolloin päiväraha lasketaan vain muuhun kulutukseen.';
+  const v=document.getElementById('pb30-verdict');
+  if(v){if(b.pot<0){v.className='alert danger';v.style.display='block';v.style.margin='12px 0 0';v.innerHTML='Seuraavan 30 pv tiedossa olevat menot ylittävät käytettävissä olevat varat '+eur(-b.pot)+'. Päivärahaa ei jää ennen kuin tuloja tulee lisää tai menoja siirtyy myöhemmäksi.';}
+    else{v.style.display='none';v.innerHTML='';}}
+}
+
 let _fcChart=null;
 function renderDayBudget(){
   const _pt=document.getElementById('tab-paiva');
@@ -1373,6 +1433,7 @@ function renderDayBudget(){
   }
 
   fcInitAddMonth();
+  render30dayBudget();
 }
 
 function fcInitAddMonth(){
