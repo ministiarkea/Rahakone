@@ -589,15 +589,6 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
     <div id="pb30-verdict"></div>
   </div>
 
-  <div class="sec-title">Nyt: ennen seuraavaa tuloa</div>
-  <div class="card card-accent">
-    <div class="g2" style="margin-bottom:6px">
-      <div class="sb"><div class="slbl">Vapaata / pv</div><div class="sval green" id="pb-realday">0 €</div></div>
-      <div class="sb"><div class="slbl">Seuraava tulo</div><div class="sval cyan" id="pb-nextinc" style="font-size:1rem">—</div></div>
-    </div>
-    <div class="tip" id="pb-realnote"></div>
-  </div>
-
   <div class="sec-title">Lisää tuleva erä</div>
   <div class="card">
     <div class="tip" style="margin-bottom:11px">Syötä odotettu kertaluontoinen tulo tai meno mille tahansa tulevalle kuukaudelle (esim. vakuutuslasku, veronpalautus, lomamatka, ennakkovero). Toistuvat erät tulevat ennusteeseen automaattisesti, näitä ei tarvitse lisätä tähän. Voit syöttää niin monta kuukautta eteenpäin kuin haluat.</div>
@@ -1308,16 +1299,18 @@ function buildForecast(monthsAhead){
   return {startBal,points,months,min:gMin,events};
 }
 
-// Rullaava päivärahabudjetti: seuraavat 30 pv tästä päivästä, kuukausirajan yli.
-// Jäljelle jäävä raha (saldo + tulot − laskut − muuttuvat − puskuri) jaettuna 30 päivälle.
+// Rullaava päivärahabudjetti: suurin tasainen päiväsumma, jolla saldo EI missään
+// vaiheessa seuraavan 30 pv aikana putoa turvarajan alle. Ottaa huomioon MILLOIN
+// tulot ja laskut osuvat (kuukausirajan yli), ei pelkkää kk-keskiarvoa. Rajoittava
+// tekijä on jakson tiukin hetki, esim. juuri ennen kuin iso tulo saapuu.
 function compute30dayBudget(){
   const W=30;
   const startBal=(S.saldoTili||0)+(S.saldoKateis||0);
   const buffer=S.forecastBuffer||0;
   const today=new Date(CUR_YEAR,TODAY.getMonth(),TODAY_DAY);
   const end=new Date(CUR_YEAR,TODAY.getMonth(),TODAY_DAY+W-1);
-  // Päivätyn erän esiintymät ikkunassa (toistuva voi osua 0, 1 tai 2 kertaa)
-  function occ(item){
+  const idxOf=dt=>Math.round((dt-today)/86400000);
+  function occDates(item){
     const res=[];const m=itemM(item);const dy=parseInt(item.day)||0;if(dy<1)return res;
     const pushOcc=(y,mo)=>{const dim=new Date(y,mo+1,0).getDate();let d=Math.min(dy,dim);let o=new Date(y,mo,d);
       const isCur=(y===CUR_YEAR&&mo===TODAY.getMonth());
@@ -1328,34 +1321,41 @@ function compute30dayBudget(){
     else{const p=resolvePeriod(item);if(p)pushOcc(p.y,p.m-1);}
     return res;
   }
-  let inc=0,fixedExp=0,varExp=0,foodAmt=0;
+  const flow=new Array(W).fill(0); // päivittäiset kiinteät virrat: tulot +, päivätyt laskut −
+  let inc=0,fixedExp=0,undated=0,foodAmt=0;
   S.income.forEach(i=>{if((i.amount||0)===0)return;const dy=parseInt(i.day)||0;
-    if(dy<1){if(itemM(i)===0)inc+=i.amount;}
-    else inc+=occ(i).length*(i.amount||0);});
+    if(dy<1){if(itemM(i)===0){flow[0]+=i.amount;inc+=i.amount;}}
+    else occDates(i).forEach(o=>{const k=idxOf(o);if(k>=0&&k<W){flow[k]+=i.amount;inc+=i.amount;}});});
   [...S.expenses,...S.yritys].forEach(e=>{if((e.amount||0)===0)return;const dy=parseInt(e.day)||0;
-    if(dy<1){ // päivätön muuttuva (esim. ruoka-arvio): kk-summa kerran 30 pv ikkunassa
-      const m=itemM(e);let include=false;
-      if(m===0)include=true;
-      else{const p=resolvePeriod(e);if(p){const ms=new Date(p.y,p.m-1,1),me=new Date(p.y,p.m,0);if(me>=today&&ms<=end)include=true;}}
-      if(include){varExp+=e.amount;if(e.cat==='ruoka')foodAmt+=e.amount;}
-    } else fixedExp+=occ(e).length*(e.amount||0);
+    if(dy<1){const m=itemM(e);let include=false;
+      if(m===0)include=true; else{const p=resolvePeriod(e);if(p){const ms=new Date(p.y,p.m-1,1),me=new Date(p.y,p.m,0);if(me>=today&&ms<=end)include=true;}}
+      if(include){undated+=e.amount;if(e.cat==='ruoka')foodAmt+=e.amount;}
+    } else occDates(e).forEach(o=>{const k=idxOf(o);if(k>=0&&k<W){flow[k]-=e.amount;fixedExp+=e.amount;}});
   });
-  const pot=startBal+inc-fixedExp-varExp-buffer;
-  return {W,startBal,inc,fixedExp,varExp,foodAmt,buffer,pot,perDay:pot/W,end};
+  const foodBurn=undated/W; // päivätön sitoutunut kulu (esim. ruoka) jaettuna tasaisesti
+  let bal=startBal,safe=Infinity,tightIdx=0,trough=startBal,troughIdx=0;
+  for(let d=0;d<W;d++){
+    bal+=flow[d];bal-=foodBurn;      // saldo ilman harkinnanvaraista käyttöä
+    if(bal<trough){trough=bal;troughIdx=d;}
+    const cap=(bal-buffer)/(d+1);    // suurin tasainen päiväkäyttö joka kestää päivään d asti
+    if(cap<safe){safe=cap;tightIdx=d;}
+  }
+  const perDay=Math.max(0,safe);
+  const dOf=k=>new Date(today.getFullYear(),today.getMonth(),today.getDate()+k);
+  return {W,startBal,inc,fixedExp,undated,foodAmt,buffer,perDay,tightDate:dOf(tightIdx),trough,troughDate:dOf(troughIdx),feasible:trough>=buffer};
 }
 function render30dayBudget(){
   const b=compute30dayBudget();
   const num=document.getElementById('pb30-num');
-  if(num){if(b.pot>=0){num.textContent=eur(b.perDay)+' / pv';num.className='big-num '+(b.perDay<5?'red':b.perDay<15?'orange':'green');}
-    else{num.textContent=eur(0)+' / pv';num.className='big-num red';}}
+  if(num){num.textContent=eur(b.perDay)+' / pv';num.className='big-num '+((!b.feasible||b.perDay<5)?'red':b.perDay<15?'orange':'green');}
   const brk=document.getElementById('pb30-break');
-  if(brk)brk.innerHTML='Saldo '+eur(b.startBal)+'  +  tulot 30 pv '+eur(b.inc)+'  −  laskut '+eur(b.fixedExp)+(b.varExp>0?'  −  muuttuvat '+eur(b.varExp):'')+(b.buffer>0?'  −  puskuri '+eur(b.buffer):'')+'  =  '+eur(b.pot)+'   ÷ 30 pv';
+  if(brk)brk.innerHTML='Suurin tasainen päiväkäyttö, jolla saldo pysyy turvarajan yläpuolella koko 30 pv ajan. Rajoittava hetki '+fcDate(b.tightDate)+'. (saldo '+eur(b.startBal)+', tulot 30 pv '+eur(b.inc)+', laskut '+eur(b.fixedExp)+(b.undated>0?', muuttuvat '+eur(b.undated):'')+(b.buffer>0?', turvaraja '+eur(b.buffer):'')+')';
   const food=document.getElementById('pb30-food');
   if(food)food.innerHTML=(b.foodAmt>0)
     ? '🛒 Ruoka-arvio mukana laskuissa ('+eur(b.foodAmt)+'/kk), joten tämä päiväraha on muuhun kulutukseen ruoan päälle.'
     : '🛒 Ruokaa ei ole eritelty omaksi menoksi, joten tämä päiväraha kattaa myös ruoan. Halutessasi voit eritellä sen Menot-välilehden ruokalaskurilla, jolloin päiväraha lasketaan vain muuhun kulutukseen.';
   const v=document.getElementById('pb30-verdict');
-  if(v){if(b.pot<0){v.className='alert danger';v.style.display='block';v.style.margin='12px 0 0';v.innerHTML='Seuraavan 30 pv tiedossa olevat menot ylittävät käytettävissä olevat varat '+eur(-b.pot)+'. Päivärahaa ei jää ennen kuin tuloja tulee lisää tai menoja siirtyy myöhemmäksi.';}
+  if(v){if(!b.feasible){v.className='alert danger';v.style.display='block';v.style.margin='12px 0 0';v.innerHTML='Jo ilman ylimääräistä käyttöä saldo painuisi turvarajan alle '+fcDate(b.troughDate)+' ('+eur(b.trough)+'). Päivärahaa ei jää ennen kuin siirrät menoja myöhemmäksi tai saat lisätuloa.';}
     else{v.style.display='none';v.innerHTML='';}}
 }
 
@@ -1412,24 +1412,6 @@ function renderDayBudget(){
         +(warn?'<div class="alert '+(mo.low<0?'danger':'warn')+'" style="margin:0 0 8px;padding:8px 11px;font-size:11px">'+(mo.low<0?'Saldo miinuksella '+fcDate(mo.lowDate):'Saldo käy turvarajan alle '+fcDate(mo.lowDate))+'</div>':'')
         +'<div style="display:flex;flex-wrap:wrap;gap:5px">'+(pills||'<span class="tip">Ei kirjattuja eriä</span>')+'</div></div>';
     }).join('');
-  }
-
-  // Nyt: ennen seuraavaa tuloa
-  const nextInc=fc.events.find(e=>e.kind==='inc');
-  const rd=document.getElementById('pb-realday');const ni=document.getElementById('pb-nextinc');const note=document.getElementById('pb-realnote');
-  if(nextInc){
-    const today0=fc.points[0].t;
-    const daysUntil=Math.max(1,Math.round((nextInc.date-today0)/86400000));
-    let trough=fc.startBal;
-    for(const p of fc.points){if(p.t<nextInc.date&&p.bal<trough)trough=p.bal;}
-    const spendable=Math.max(0,trough-buffer);const perDay=spendable/daysUntil;
-    if(rd){rd.textContent=eur(perDay)+'/pv';rd.className='sval '+(perDay<5?'red':perDay<15?'orange':'green');}
-    if(ni)ni.textContent=esc(nextInc.label)+' · '+fcDate(nextInc.date);
-    if(note)note.textContent='Ennen seuraavaa tuloa ('+daysUntil+' pv) saldo käy matalimmillaan '+eur(trough)+'. Sen yli '+(buffer>0?'(− '+eur(buffer)+' puskuri) ':'')+'voit käyttää noin '+eur(perDay)+' päivässä ilman että laskut vaarantuvat.';
-  } else {
-    if(rd){rd.textContent='—';rd.className='sval';}
-    if(ni)ni.textContent='Ei tulevia tuloja jaksolla';
-    if(note)note.textContent='Lisää tuloja Tulot-välilehdellä tai alle, niin näet realistisen päiväbudjetin.';
   }
 
   fcInitAddMonth();
