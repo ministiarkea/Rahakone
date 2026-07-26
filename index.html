@@ -194,6 +194,9 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
 .txn:last-child{border-bottom:none;}
 .txn-neg{color:var(--red);}
 .txn-pos{color:var(--green);}
+.gap-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:12px;}
+.gap-row:last-child{border-bottom:none;}
+.gap-row.is-now{background:rgba(0,200,240,0.05);border-radius:8px;padding-left:8px;padding-right:8px;}
 @media(max-width:480px){
   .header{padding:22px 12px 14px;}
   .neon-logo{font-size:1.1rem;letter-spacing:7px;}
@@ -589,6 +592,21 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
     <div id="pb30-verdict"></div>
   </div>
 
+  <div class="sec-title">Jos päiväraha olisi isompi <button class="help-btn" onclick="showHelp('vaje')">?</button></div>
+  <div class="card">
+    <div class="tip" style="margin-bottom:12px">Jokainen rivi kertoo, mitä tapahtuisi jos käyttäisit tietyn summan päivässä seuraavat 30 pv. <strong>Puuttuu</strong> on summa, joka pitäisi saada lisää (lisätuloa, säästöistä tai menoja siirtämällä), jotta saldo ei kävisi turvarajan alle jakson aikana.</div>
+    <div id="pb30-gap-list"></div>
+    <hr class="div">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <div>
+        <div class="slbl" style="margin-bottom:5px">Oma taso</div>
+        <div class="xp-row" style="width:130px;margin-bottom:0"><input type="number" id="pb30-custom" min="0" placeholder="0" style="text-align:right;flex:1" oninput="S.pb30Custom=parseFloat(this.value)||0;save(true);renderGapCustom()"><span style="padding:0 9px;color:var(--text-3)">€/pv</span></div>
+      </div>
+      <div class="tip" style="flex:1;min-width:140px">Kokeile mitä tahansa päiväsummaa.</div>
+    </div>
+    <div id="pb30-gap-custom" class="mt12"></div>
+  </div>
+
   <div class="sec-title">Lisää tuleva erä</div>
   <div class="card">
     <div class="tip" style="margin-bottom:11px">Syötä odotettu kertaluontoinen tulo tai meno mille tahansa tulevalle kuukaudelle (esim. vakuutuslasku, veronpalautus, lomamatka, ennakkovero). Toistuvat erät tulevat ennusteeseen automaattisesti, näitä ei tarvitse lisätä tähän. Voit syöttää niin monta kuukautta eteenpäin kuin haluat.</div>
@@ -905,7 +923,7 @@ const DEF={
   debts:[{id:'db1',label:'Opintolaina',amount:0},{id:'db2',label:'Asuntolaina',amount:0},{id:'db3',label:'Kulutusluotto',amount:0}],
   firePortfolio:0,fireMonthlySave:0,fireReturn:7,
   history:[],wizardDone:false,
-  forecastMonths:3,forecastBuffer:0,
+  forecastMonths:3,forecastBuffer:0,pb30Custom:30,
   benchmarkProfile:"lp_kou_kaksi_teinia",
   lapsilisaLapsia:0,lapsilisaAlle3:0,lapsilisaYksinhuoltaja:false,
   elatusSuunta:"ei",elatusSum:0,
@@ -930,6 +948,7 @@ function load(){
   if(!S.history)S.history=[];
   if(S.forecastMonths==null)S.forecastMonths=3;
   if(S.forecastBuffer==null)S.forecastBuffer=0;
+  if(S.pb30Custom==null)S.pb30Custom=30;
   [...S.income,...S.expenses,...S.yritys].forEach(x=>{if(x.year!=null&&x.year!==''){x.year=parseInt(x.year)||null;}});
   if(S.wizardDone==null)S.wizardDone=false;
   if(!S.benchmarkProfile)S.benchmarkProfile="lp_kou_kaksi_teinia";
@@ -1025,8 +1044,8 @@ function renderLapsilisa(){
 function lisaaLapsilisaTuloksi(){
   const n=S.lapsilisaLapsia||0;const alle3=Math.min(S.lapsilisaAlle3||0,n);const yk=S.lapsilisaYksinhuoltaja||false;
   const{total}=laskeLapsilisa(n,alle3,yk);if(total<=0)return;
-  S.income=S.income.filter(i=>i.label!=='Lapsilisa (Kela)');
-  S.income.push({id:'i'+Date.now(),label:'Lapsilisa (Kela)',amount:Math.round(total*100)/100,day:26,month:0,paid:false});
+  S.income=S.income.filter(i=>i.label!=='Lapsilisä (Kela)');
+  S.income.push({id:'i'+Date.now(),label:'Lapsilisä (Kela)',amount:Math.round(total*100)/100,day:26,month:0,paid:false});
   save();renderIncome();update();alert('Lapsilisa '+total.toFixed(2)+' eur/kk lisatty tuloksi!');
 }
 function renderElatus(){
@@ -1299,11 +1318,10 @@ function buildForecast(monthsAhead){
   return {startBal,points,months,min:gMin,events};
 }
 
-// Rullaava päivärahabudjetti: suurin tasainen päiväsumma, jolla saldo EI missään
-// vaiheessa seuraavan 30 pv aikana putoa turvarajan alle. Ottaa huomioon MILLOIN
-// tulot ja laskut osuvat (kuukausirajan yli), ei pelkkää kk-keskiarvoa. Rajoittava
-// tekijä on jakson tiukin hetki, esim. juuri ennen kuin iso tulo saapuu.
-function compute30dayBudget(){
+// Kerää seuraavan 30 pv kiinteät rahavirrat: tulot ja päivätyt laskut omille
+// päivilleen, päivättömät menot (esim. ruoka-arvio) jaetaan tasan jaksolle.
+// Tätä pohjaa käyttävät sekä päivärahalaskuri että vajelaskuri.
+function build30dayBase(){
   const W=30;
   const startBal=(S.saldoTili||0)+(S.saldoKateis||0);
   const buffer=S.forecastBuffer||0;
@@ -1333,17 +1351,82 @@ function compute30dayBudget(){
     } else occDates(e).forEach(o=>{const k=idxOf(o);if(k>=0&&k<W){flow[k]-=e.amount;fixedExp+=e.amount;}});
   });
   const foodBurn=undated/W; // päivätön sitoutunut kulu (esim. ruoka) jaettuna tasaisesti
-  let bal=startBal,safe=Infinity,tightIdx=0,trough=startBal,troughIdx=0;
-  for(let d=0;d<W;d++){
-    bal+=flow[d];bal-=foodBurn;      // saldo ilman harkinnanvaraista käyttöä
+  return {W,startBal,buffer,flow,foodBurn,inc,fixedExp,undated,foodAmt,today};
+}
+
+// Rullaava päivärahabudjetti: suurin tasainen päiväsumma, jolla saldo EI missään
+// vaiheessa seuraavan 30 pv aikana putoa turvarajan alle. Ottaa huomioon MILLOIN
+// tulot ja laskut osuvat (kuukausirajan yli), ei pelkkää kk-keskiarvoa. Rajoittava
+// tekijä on jakson tiukin hetki, esim. juuri ennen kuin iso tulo saapuu.
+function compute30dayBudget(){
+  const b=build30dayBase();
+  let bal=b.startBal,safe=Infinity,tightIdx=0,trough=b.startBal,troughIdx=0;
+  for(let d=0;d<b.W;d++){
+    bal+=b.flow[d];bal-=b.foodBurn;    // saldo ilman harkinnanvaraista käyttöä
     if(bal<trough){trough=bal;troughIdx=d;}
-    const cap=(bal-buffer)/(d+1);    // suurin tasainen päiväkäyttö joka kestää päivään d asti
+    const cap=(bal-b.buffer)/(d+1);    // suurin tasainen päiväkäyttö joka kestää päivään d asti
     if(cap<safe){safe=cap;tightIdx=d;}
   }
   const perDay=Math.max(0,safe);
-  const dOf=k=>new Date(today.getFullYear(),today.getMonth(),today.getDate()+k);
-  return {W,startBal,inc,fixedExp,undated,foodAmt,buffer,perDay,tightDate:dOf(tightIdx),trough,troughDate:dOf(troughIdx),feasible:trough>=buffer};
+  const dOf=k=>new Date(b.today.getFullYear(),b.today.getMonth(),b.today.getDate()+k);
+  return Object.assign({},b,{perDay,tightDate:dOf(tightIdx),trough,troughDate:dOf(troughIdx),feasible:trough>=b.buffer});
 }
+
+// Simuloi kiinteän päiväkäytön x €/pv koko 30 pv jaksolle.
+// missing = suurin vaje turvarajaan nähden = summa joka pitäisi saada lisää,
+// jotta saldo kestäisi koko jakson tällä käyttötasolla.
+function simulateDailySpend(b,x){
+  let bal=b.startBal,worst=0,breakIdx=-1,minBal=Infinity,minIdx=0;
+  for(let d=0;d<b.W;d++){
+    bal+=b.flow[d];bal-=b.foodBurn;bal-=x;
+    if(bal<minBal){minBal=bal;minIdx=d;}
+    if(b.buffer-bal>worst)worst=b.buffer-bal;
+    if(breakIdx<0&&bal<b.buffer)breakIdx=d;
+  }
+  return {x,total:x*b.W,missing:Math.max(0,worst),endBal:bal,minBal,minIdx,breakIdx};
+}
+
+// Portaikko: 8 askelta 5 € välein nykyisen turvallisen tason alalaidasta ylöspäin.
+function gapLevels(perDay){
+  const step=5,start=Math.max(step,Math.floor((perDay||0)/step)*step),out=[];
+  for(let i=0;i<8;i++)out.push(start+i*step);
+  return out;
+}
+
+function renderGapLadder(b){
+  const el=document.getElementById('pb30-gap-list');if(!el)return;
+  const dOf=k=>new Date(b.today.getFullYear(),b.today.getMonth(),b.today.getDate()+k);
+  el.innerHTML=gapLevels(b.perDay).map(x=>{
+    const r=simulateDailySpend(b,x);
+    const isNow=(x<=b.perDay&&b.perDay<x+5);
+    const short=r.missing>0.5;
+    const left='<div><div style="color:var(--text-1);font-size:13px;display:flex;align-items:center;gap:6px">'+x+' €/pv'
+      +(isNow?'<span class="pill cyan" style="font-size:8px">nykyinen taso</span>':'')+'</div>'
+      +'<div style="font-size:10px;color:var(--text-3)">30 pv yhteensä '+eur(x*b.W)+'</div></div>';
+    const right=short
+      ? '<div class="bench-diff neg" style="text-align:right"><div>puuttuu '+eur(r.missing)+'</div><div style="font-size:10px;font-weight:400;color:var(--text-3)">raja rikkoutuu '+fcDate(dOf(r.breakIdx))+'</div></div>'
+      : '<div class="bench-diff pos" style="text-align:right"><div>✓ riittää</div><div style="font-size:10px;font-weight:400;color:var(--text-3)">liikkumavaraa '+eur(Math.max(0,r.minBal-b.buffer))+'</div></div>';
+    return '<div class="gap-row'+(isNow?' is-now':'')+'">'+left+right+'</div>';
+  }).join('');
+  renderGapCustom(b);
+}
+
+function renderGapCustom(b){
+  b=b||compute30dayBudget();
+  const inp=document.getElementById('pb30-custom');
+  if(inp&&document.activeElement!==inp)inp.value=S.pb30Custom||'';
+  const el=document.getElementById('pb30-gap-custom');if(!el)return;
+  const x=S.pb30Custom||0;
+  if(x<=0){el.innerHTML='<div class="tip">Syötä päiväsumma nähdäksesi paljonko rahaa puuttuisi.</div>';return;}
+  const dOf=k=>new Date(b.today.getFullYear(),b.today.getMonth(),b.today.getDate()+k);
+  const r=simulateDailySpend(b,x);
+  if(r.missing>0.5){
+    el.innerHTML='<div class="alert warn" style="margin:0"><span>⚠</span><span>'+eur(x)+'/pv (30 pv yhteensä '+eur(r.total)+') ei ole katettu. Puuttuu <strong>'+eur(r.missing)+'</strong>, ja saldo painuu turvarajan alle '+fcDate(dOf(r.breakIdx))+'.</span></div>';
+  } else {
+    el.innerHTML='<div class="alert success" style="margin:0"><span>✓</span><span>'+eur(x)+'/pv (30 pv yhteensä '+eur(r.total)+') on katettu. Tiukimmillaan liikkumavaraa jää '+eur(Math.max(0,r.minBal-b.buffer))+'.</span></div>';
+  }
+}
+
 function render30dayBudget(){
   const b=compute30dayBudget();
   const num=document.getElementById('pb30-num');
@@ -1357,6 +1440,7 @@ function render30dayBudget(){
   const v=document.getElementById('pb30-verdict');
   if(v){if(!b.feasible){v.className='alert danger';v.style.display='block';v.style.margin='12px 0 0';v.innerHTML='Jo ilman ylimääräistä käyttöä saldo painuisi turvarajan alle '+fcDate(b.troughDate)+' ('+eur(b.trough)+'). Päivärahaa ei jää ennen kuin siirrät menoja myöhemmäksi tai saat lisätuloa.';}
     else{v.style.display='none';v.innerHTML='';}}
+  renderGapLadder(b);
 }
 
 let _fcChart=null;
@@ -1666,7 +1750,14 @@ paiva:{title:'📅 Kassavirtaennuste',rows:[
   {i:'🛡',t:'<strong>Turvapuskuri</strong> on summa, jonka haluat aina pitää tilillä. Ennuste varoittaa jo silloin, kun saldo uhkaa painua tämän alle, ei vasta nollassa.'},
   {i:'🗓',t:'<strong>Ennustejakso</strong>: katso 1, 2, 3, 6 tai 12 kuukautta kerrallaan. Jokaisesta kuukaudesta näet alku- ja loppusaldon sekä sen matalimman kohdan.'},
   {i:'➕',t:'<strong>Lisää tuleva erä</strong>: syötä kertaluontoinen tulo tai meno mille tahansa tulevalle kuukaudelle (vakuutuslasku, veronpalautus, lomamatka). Toistuvat erät tulevat mukaan automaattisesti. Voit syöttää niin monta kuukautta eteenpäin kuin haluat.'}
-],info:'Kuluvalta kuukaudelta ennusteeseen lasketaan vain maksamattomat erät — jo maksetut menot ja saadut tulot ovat jo saldossasi.'}};
+],info:'Kuluvalta kuukaudelta ennusteeseen lasketaan vain maksamattomat erät — jo maksetut menot ja saadut tulot ovat jo saldossasi.'},
+vaje:{title:'💸 Jos päiväraha olisi isompi',rows:[
+  {i:'🔢',t:'Laskuri kokeilee eri päivärahatasoja: mitä tapahtuisi, jos käyttäisit esimerkiksi 30 € päivässä seuraavat 30 pv. Ylin rivi on lähellä nykyistä turvallista tasoasi, loput sen yläpuolella.'},
+  {i:'❗',t:'<strong>Puuttuu</strong> on jakson suurin vaje turvarajaan nähden. Se on siis summa, joka pitäisi saada lisää (lisätuloa, säästöistä tai menoja siirtämällä), jotta saldo kestäisi koko 30 pv tuolla käyttötasolla.'},
+  {i:'📅',t:'<strong>Raja rikkoutuu</strong> kertoo päivän, jolloin saldo painuisi turvarajan alle. Myöhemmin tuleva palkka voi nostaa saldon takaisin, mutta vaje pitäisi silti paikata sitä ennen.'},
+  {i:'✓',t:'<strong>Liikkumavaraa</strong> on se, paljonko rahaa jää yli jakson tiukimpana hetkenä. Se on pienin pelivara jakson aikana, ei loppusaldo.'},
+  {i:'🛒',t:'Päiväsumma tarkoittaa samaa kuin ylempi päiväraha: jos ruoka on kirjattu omaksi menoksi, tämä on muuta kulutusta ruoan päälle. Jos ei, summan pitää kattaa myös ruoka.'}
+],info:'Laskuri käyttää samoja tuloja ja laskuja kuin päivärahabudjetti: päivätyt erät osuvat omille päivilleen ja päivättömät menot jaetaan tasan 30 päivälle.'}};
 function showHelp(key){
   const d=HELP_CONTENT[key]||HELP_CONTENT['yleinen'];
   const modal=document.getElementById('helpModal');const title=document.getElementById('helpModalTitle');const body=document.getElementById('helpModalBody');
