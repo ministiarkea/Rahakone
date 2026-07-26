@@ -197,6 +197,44 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
 .gap-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:12px;}
 .gap-row:last-child{border-bottom:none;}
 .gap-row.is-now{background:rgba(0,200,240,0.05);border-radius:8px;padding-left:8px;padding-right:8px;}
+.desk-pair{display:contents;}
+/* ===== Työpöytä ===== */
+@media(min-width:960px){
+  body{background-image:radial-gradient(ellipse 55% 38% at 50% -8%,rgba(124,92,191,0.13),transparent),
+    radial-gradient(ellipse 40% 30% at 92% 92%,rgba(0,200,240,0.08),transparent),
+    radial-gradient(ellipse 28% 24% at 5% 55%,rgba(124,92,191,0.05),transparent);}
+  .header{padding:52px 20px 26px;}
+  .neon-logo{font-size:2.1rem;letter-spacing:16px;margin-left:16px;}
+  .sub-logo{font-size:10px;letter-spacing:4px;margin-top:8px;}
+  .nav{justify-content:center;flex-wrap:wrap;overflow-x:visible;padding:2px 20px;}
+  .nav-btn{font-size:11px;padding:13px 13px;}
+  .nav-group-lbl{font-size:8px;}
+  .main{max-width:960px;padding:26px 28px 110px;}
+  .card{padding:20px 22px;border-radius:16px;transition:border-color 0.15s;}
+  .card:hover{border-color:var(--border-2);}
+  .sec-title{font-size:10px;letter-spacing:3px;margin:26px 0 14px;}
+  .sval{font-size:1.45rem;}
+  .big-num{font-size:2.7rem;}
+  .saldo-inp{font-size:2rem;}
+  .tip{font-size:11px;}
+  .g2,.g3{gap:10px;}
+  .sb{padding:14px 16px;}
+  .slbl{font-size:10px;}
+  .pill{font-size:10px;}
+  .alert{font-size:13px;padding:13px 16px;}
+  .bb-btn{font-size:10px;padding:7px 14px;}
+  .modal-box{max-width:480px;}
+  /* Rinnakkaiskortit: kaksi korttia vierekkäin leveällä näytöllä */
+  .desk-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start;margin-bottom:10px;}
+  .desk-pair>.card{margin:0 !important;}
+  /* Kalenteri kahteen palstaan: kalenteri vasemmalla, tapahtumat oikealla */
+  #tab-kalenteri.active{display:grid;grid-template-columns:1fr 1.05fr;column-gap:18px;align-items:start;}
+  #tab-kalenteri>.sec-title{margin-top:0;}
+  #tab-kalenteri>#calTitle{grid-column:1;grid-row:1;}
+  #tab-kalenteri>.card{grid-column:1;grid-row:2;}
+  #tab-kalenteri>.sec-title:not(#calTitle){grid-column:2;grid-row:1;}
+  #tab-kalenteri>#calEvents{grid-column:2;grid-row:2;}
+}
 @media(max-width:480px){
   .header{padding:22px 12px 14px;}
   .neon-logo{font-size:1.1rem;letter-spacing:7px;}
@@ -331,12 +369,14 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
   </div>
 
   <div class="sec-title">Menorakenne <button class="help-btn" onclick="showHelp('menorakenne')">?</button></div>
+  <div class="desk-pair">
   <div class="card"><div id="menorakenne-wrap"></div></div>
 
   <div class="card">
     <div class="lbl"><div class="lbl-dot"></div>Menojakauma</div>
     <canvas id="chartMenot" height="180" style="display:none"></canvas>
     <div id="chartLegend" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:7px;"></div>
+  </div>
   </div>
 
   <div class="sec-title">Viitearvot <button class="help-btn" onclick="showHelp('benchmark')">?</button></div>
@@ -381,6 +421,7 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
 <div id="tab-tulot" class="tab">
   <div class="sec-title">Tulolähteet <button class="help-btn" onclick="showHelp('tulot')">?</button></div>
 
+  <div class="desk-pair">
   <div class="card card-accent" style="margin-bottom:10px">
     <div class="lbl"><span class="lbl-dot"></span>Lapsilisälaskuri <span style="font-size:9px;color:var(--text-3);font-weight:400;text-transform:none;letter-spacing:0">(Kela 2025/2026)</span></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
@@ -426,6 +467,7 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
       <input type="number" id="elatusSum" placeholder="€/kk" min="0" oninput="S.elatusSum=parseFloat(this.value)||0;save();renderElatus()" style="width:90px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text-1);font-size:13px;font-family:inherit">
     </div>
     <div id="elatus-info" style="font-size:10px;color:var(--text-3);margin-top:6px"></div>
+  </div>
   </div>
 
   <div id="incomeList"></div>
@@ -556,6 +598,7 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
   <div class="sec-title">Kassavirtaennuste <button class="help-btn" onclick="showHelp('paiva')">?</button></div>
   <div class="tip" style="margin-bottom:10px">Ennuste lähtee nykyisestä saldostasi ja seuraa päivä päivältä milloin rahaa tulee ja menee. Jakson <strong>matalin kohta</strong> kertoo tiukimman hetken: jos se pysyy turvarajan yläpuolella, kaikki laskut on katettu siihen asti.</div>
 
+  <div class="desk-pair">
   <div class="card" style="margin-bottom:10px">
     <div class="slbl" style="margin-bottom:8px">Ennustejakso</div>
     <div id="fcHorizon" style="display:flex;flex-wrap:wrap;gap:6px"></div>
@@ -573,6 +616,7 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
     <div class="big-num" id="fcLowNum">0 €</div>
     <div class="tip mt8" id="fcLowWhen"></div>
     <div id="fcVerdict" class="alert info" style="margin-top:12px;margin-bottom:0"></div>
+  </div>
   </div>
 
   <div class="card">
@@ -722,6 +766,7 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
     <div class="sb" style="text-align:center"><div class="slbl">Vuosimenot</div><div class="sval red" id="fire-yearexp">0 €</div></div>
     <div class="sb" style="text-align:center"><div class="slbl">Kuukausimenot</div><div class="sval orange" id="fire-monexp">0 €</div></div>
   </div>
+  <div class="desk-pair" style="margin-top:10px">
   <div class="card" style="margin-top:10px">
     <div class="lbl"><div class="lbl-dot"></div>FIRE-asetukset</div>
     <div class="xp-row" style="margin-bottom:8px">
@@ -751,6 +796,7 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
       <div class="prog-bar"><div class="prog-fill cyan" id="pb-fire" style="width:0%"></div></div>
     </div>
     <div class="tip mt8" id="fire-detail">Syötä salkun arvo ja kuukausisäästö laskeaksesi.</div>
+  </div>
   </div>
   <div class="sec-title mt16">Tiesitkö?</div>
   <div class="card" style="font-size:12px;color:var(--text-2);line-height:1.8">
@@ -1477,7 +1523,7 @@ function renderDayBudget(){
     const ds=[{label:'Saldo',data,borderColor:'rgba(0,200,240,0.9)',backgroundColor:'rgba(0,200,240,0.08)',borderWidth:2,pointRadius:0,tension:0.15,fill:true}];
     if(buffer>0)ds.push({label:'Turvapuskuri',data:data.map(()=>buffer),borderColor:'rgba(249,115,22,0.6)',borderWidth:1,borderDash:[5,4],pointRadius:0,fill:false});
     ds.push({label:'Nolla',data:data.map(()=>0),borderColor:'rgba(239,68,68,0.45)',borderWidth:1,borderDash:[2,3],pointRadius:0,fill:false});
-    _fcChart=new Chart(cv,{type:'line',data:{labels,datasets:ds},options:{responsive:true,interaction:{intersect:false,mode:'index'},plugins:{legend:{labels:{color:'rgba(255,255,255,0.5)',font:{size:10},boxWidth:14}},tooltip:{callbacks:{label:c=>c.dataset.label+': '+eur(c.raw)}}},scales:{x:{ticks:{color:'rgba(255,255,255,0.4)',font:{size:9},maxTicksLimit:8,autoSkip:true},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'rgba(255,255,255,0.4)',font:{size:9},callback:val=>eur(val)},grid:{color:'rgba(255,255,255,0.06)'}}}}});
+    _fcChart=new Chart(cv,{type:'line',data:{labels,datasets:ds},options:{responsive:true,aspectRatio:(window.innerWidth>=960?2.8:2),interaction:{intersect:false,mode:'index'},plugins:{legend:{labels:{color:'rgba(255,255,255,0.5)',font:{size:10},boxWidth:14}},tooltip:{callbacks:{label:c=>c.dataset.label+': '+eur(c.raw)}}},scales:{x:{ticks:{color:'rgba(255,255,255,0.4)',font:{size:9},maxTicksLimit:8,autoSkip:true},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'rgba(255,255,255,0.4)',font:{size:9},callback:val=>eur(val)},grid:{color:'rgba(255,255,255,0.06)'}}}}});
   }
 
   // Kuukausikortit
@@ -1533,7 +1579,7 @@ function renderChart(){
   if(!items.length){const lg=document.getElementById('chartLegend');if(lg)lg.innerHTML='<span class="tip">Lisää menoja nähdäksesi jakauman.</span>';ctx.style.display='none';return;}
   ctx.style.display='block';
   const colors=['#00c8f0','#7c5cbf','#22c55e','#f97316','#ef4444','#f59e0b','#8b5cf6','#06b6d4','#10b981','#ec4899','#6366f1','#84cc16'];
-  chartInst=new Chart(ctx,{type:'doughnut',data:{labels:items.map(m=>m.label),datasets:[{data:items.map(m=>m.amount),backgroundColor:colors.slice(0,items.length),borderColor:'rgba(7,7,13,.8)',borderWidth:2}]},options:{responsive:true,cutout:'65%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+c.label+': '+c.raw+' €'}}}}});
+  chartInst=new Chart(ctx,{type:'doughnut',data:{labels:items.map(m=>m.label),datasets:[{data:items.map(m=>m.amount),backgroundColor:colors.slice(0,items.length),borderColor:'rgba(7,7,13,.8)',borderWidth:2}]},options:{responsive:true,cutout:'65%',aspectRatio:(window.innerWidth>=960?1.35:1),plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+c.label+': '+c.raw+' €'}}}}});
   const lg=document.getElementById('chartLegend');
   if(lg)lg.innerHTML=items.map((m,i)=>'<span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--text-2)"><span style="width:7px;height:7px;border-radius:50%;background:'+colors[i]+';flex-shrink:0"></span>'+m.label+'</span>').join('');
 }
@@ -1805,7 +1851,7 @@ function renderHistoria(){
   });
   const canvas=document.getElementById('histChart');if(!canvas)return;
   if(_histChart)_histChart.destroy();
-  _histChart=new Chart(canvas,{type:'bar',data:{labels:S.history.map(h=>h.key),datasets:[{label:'Tulot',data:S.history.map(h=>h.tulot),backgroundColor:'rgba(0,200,240,0.35)',borderColor:'rgba(0,200,240,0.8)',borderWidth:1.5,borderRadius:4},{label:'Menot',data:S.history.map(h=>h.menot),backgroundColor:'rgba(239,68,68,0.3)',borderColor:'rgba(239,68,68,0.7)',borderWidth:1.5,borderRadius:4},{label:'Vapaa',data:S.history.map(h=>h.jaa),type:'line',borderColor:'rgba(34,197,94,0.9)',backgroundColor:'rgba(34,197,94,0.08)',borderWidth:2,pointRadius:4,tension:0.3,fill:true}]},options:{responsive:true,plugins:{legend:{labels:{color:'rgba(255,255,255,0.5)',font:{size:10}}}},scales:{x:{ticks:{color:'rgba(255,255,255,0.45)',font:{size:9}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'rgba(255,255,255,0.45)',font:{size:9},callback:v=>v+'€'},grid:{color:'rgba(255,255,255,0.06)'}}}}});
+  _histChart=new Chart(canvas,{type:'bar',data:{labels:S.history.map(h=>h.key),datasets:[{label:'Tulot',data:S.history.map(h=>h.tulot),backgroundColor:'rgba(0,200,240,0.35)',borderColor:'rgba(0,200,240,0.8)',borderWidth:1.5,borderRadius:4},{label:'Menot',data:S.history.map(h=>h.menot),backgroundColor:'rgba(239,68,68,0.3)',borderColor:'rgba(239,68,68,0.7)',borderWidth:1.5,borderRadius:4},{label:'Vapaa',data:S.history.map(h=>h.jaa),type:'line',borderColor:'rgba(34,197,94,0.9)',backgroundColor:'rgba(34,197,94,0.08)',borderWidth:2,pointRadius:4,tension:0.3,fill:true}]},options:{responsive:true,aspectRatio:(window.innerWidth>=960?2.6:2),plugins:{legend:{labels:{color:'rgba(255,255,255,0.5)',font:{size:10}}}},scales:{x:{ticks:{color:'rgba(255,255,255,0.45)',font:{size:9}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'rgba(255,255,255,0.45)',font:{size:9},callback:v=>v+'€'},grid:{color:'rgba(255,255,255,0.06)'}}}}});
 }
 
 function wizNext(step){document.querySelectorAll('.wiz-step').forEach(s=>s.style.display='none');const el=document.getElementById('wiz-'+step);if(el)el.style.display='block';}
