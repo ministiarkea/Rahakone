@@ -29,14 +29,16 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);
 .header{text-align:center;padding:32px 14px 18px;}
 .neon-logo{font-size:1.3rem;font-weight:200;text-transform:uppercase;letter-spacing:10px;margin-left:10px;background:var(--grad-text);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .sub-logo{font-size:9px;text-transform:uppercase;letter-spacing:3px;color:var(--text-3);margin-top:5px;}
-.nav{display:flex;border-bottom:1px solid var(--border);overflow-x:auto;padding:0 6px;position:sticky;top:0;z-index:99;background:rgba(7,7,13,0.95);backdrop-filter:blur(14px);}
-.nav::-webkit-scrollbar{display:none;}
-.nav-btn{flex-shrink:0;background:none;border:none;border-bottom:2px solid transparent;color:var(--text-3);cursor:pointer;font-family:inherit;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:11px 11px;transition:all 0.15s;white-space:nowrap;}
-.nav-btn:hover{color:var(--text-2);}
-.nav-btn.active{color:var(--cyan);border-bottom-color:var(--cyan);}
-.nav-group{display:flex;align-items:center;flex-shrink:0;}
-.nav-group-lbl{font-size:7px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-3);padding:0 4px 0 8px;white-space:nowrap;border-right:1px solid var(--border);margin-right:2px;line-height:1;align-self:center;}
-.nav-sep{width:1px;background:var(--border);height:28px;flex-shrink:0;margin:0 2px;}
+.nav{border-bottom:1px solid var(--border);position:sticky;top:0;z-index:99;background:rgba(7,7,13,0.95);backdrop-filter:blur(14px);}
+.nav-t1{display:flex;justify-content:center;gap:2px;padding:6px 8px 0;flex-wrap:wrap;}
+.nav-g{background:none;border:none;border-bottom:2px solid transparent;color:var(--text-3);cursor:pointer;font-family:inherit;font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:9px 12px 8px;transition:all 0.15s;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;}
+.nav-g:hover{color:var(--text-2);}
+.nav-g.active{color:var(--cyan);border-bottom-color:var(--cyan);}
+.nav-dot{display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--cyan);flex-shrink:0;}
+.nav-t2{display:flex;justify-content:center;gap:6px;padding:9px 10px 10px;flex-wrap:wrap;}
+.nav-tab{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:20px;color:var(--text-3);cursor:pointer;font-family:inherit;font-size:11px;font-weight:600;letter-spacing:0.5px;padding:6px 13px;transition:all 0.15s;white-space:nowrap;}
+.nav-tab:hover{color:var(--text-2);border-color:var(--border-2);}
+.nav-tab.active{background:rgba(0,200,240,0.13);border-color:rgba(0,200,240,0.45);color:var(--cyan);}
 .main{max-width:680px;margin:0 auto;padding:18px 14px 100px;}
 .tab{display:none;}.tab.active{display:block;}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 16px;margin-bottom:10px;}
@@ -206,9 +208,9 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
   .header{padding:52px 20px 26px;}
   .neon-logo{font-size:2.1rem;letter-spacing:16px;margin-left:16px;}
   .sub-logo{font-size:10px;letter-spacing:4px;margin-top:8px;}
-  .nav{justify-content:center;flex-wrap:wrap;overflow-x:visible;padding:2px 20px;}
-  .nav-btn{font-size:11px;padding:13px 13px;}
-  .nav-group-lbl{font-size:8px;}
+  .nav-t1{gap:6px;padding-top:8px;}
+  .nav-g{font-size:11px;padding:11px 16px 9px;}
+  .nav-tab{font-size:12px;padding:7px 16px;}
   .main{max-width:960px;padding:26px 28px 110px;}
   .card{padding:20px 22px;border-radius:16px;transition:border-color 0.15s;}
   .card:hover{border-color:var(--border-2);}
@@ -238,7 +240,8 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
 @media(max-width:480px){
   .header{padding:22px 12px 14px;}
   .neon-logo{font-size:1.1rem;letter-spacing:7px;}
-  .nav-btn{font-size:9px;padding:10px 8px;letter-spacing:0.5px;}
+  .nav-g{font-size:9px;padding:8px 8px 7px;letter-spacing:1px;}
+  .nav-tab{font-size:10px;padding:5px 10px;}
   .main{padding:14px 11px 100px;}
   .card{padding:13px 13px;border-radius:12px;}
   .g2{gap:7px;}.g3{grid-template-columns:1fr 1fr;gap:7px;}
@@ -268,34 +271,8 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
 </div>
 
 <nav class="nav">
-  <div class="nav-group">
-    <span class="nav-group-lbl">Perustiedot</span>
-    <button class="nav-btn active" onclick="showTab('tilanne',this)">📊 Tilanne</button>
-    <button class="nav-btn" onclick="showTab('tulot',this)">💰 Tulot</button>
-    <button class="nav-btn" onclick="showTab('menot',this)">🏠 Menot</button>
-    <button class="nav-btn" onclick="showTab('yritys',this)">🏢 Yritys</button>
-  </div>
-  <div class="nav-sep"></div>
-  <div class="nav-group">
-    <span class="nav-group-lbl">Seuranta</span>
-    <button class="nav-btn" onclick="showTab('paiva',this)">📅 Päiväbudjetti</button>
-    <button class="nav-btn" onclick="showTab('kalenteri',this)">🗓 Kalenteri</button>
-    <button class="nav-btn" onclick="showTab('historia',this)">📈 Historia</button>
-  </div>
-  <div class="nav-sep"></div>
-  <div class="nav-group">
-    <span class="nav-group-lbl">Tavoitteet</span>
-    <button class="nav-btn" onclick="showTab('tavoitteet',this)">🎯 Tavoitteet</button>
-    <button class="nav-btn" onclick="showTab('suunnitelmat',this)">🗂 Suunnitelmat</button>
-    <button class="nav-btn" onclick="showTab('jako',this)">🤝 Jako</button>
-  </div>
-  <div class="nav-sep"></div>
-  <div class="nav-group">
-    <span class="nav-group-lbl">Tulevaisuus</span>
-    <button class="nav-btn" onclick="showTab('fire',this)">🔥 FIRE</button>
-    <button class="nav-btn" onclick="showTab('varallisuus',this)">💎 Varallisuus</button>
-    <button class="nav-btn" onclick="showTab('ai',this)">🤖 AI-sparraaja</button>
-  </div>
+  <div class="nav-t1" id="navT1"></div>
+  <div class="nav-t2" id="navT2"></div>
 </nav>
 
 <div class="main">
@@ -1015,12 +992,40 @@ function load(){
 
 document.getElementById('todaySub').textContent=TODAY.toLocaleDateString('fi-FI',{weekday:'long',year:'numeric',month:'long',day:'numeric'}).toUpperCase();
 
-function showTab(name,btn){
+// ===== NAVIGAATIO =====
+// Kaksi tasoa: ylärivillä ryhmät, alarivillä valitun ryhmän välilehdet.
+// direct-merkintä = suora nappi ilman alariviä (AI-sparraaja).
+const NAV_GROUPS=[
+  {id:'perus',icon:'📋',label:'Perustiedot',tabs:[['tilanne','📊 Tilanne'],['tulot','💰 Tulot'],['menot','🏠 Menot'],['yritys','🏢 Yritys']]},
+  {id:'arki',icon:'📅',label:'Arki',tabs:[['paiva','📅 Päiväbudjetti'],['kalenteri','🗓 Kalenteri'],['jako','🤝 Kulujen jako']]},
+  {id:'tavoitteet',icon:'🎯',label:'Tavoitteet',tabs:[['tavoitteet','🎯 Tavoitteet'],['suunnitelmat','🗂 Tulojen jako']]},
+  {id:'kehitys',icon:'📈',label:'Kehitys',tabs:[['historia','📈 Historia'],['varallisuus','💎 Varallisuus'],['fire','🔥 FIRE']]},
+  {id:'ai',icon:'🤖',label:'AI',direct:'ai'},
+];
+let curNavGroup='perus';
+function groupOfTab(t){return NAV_GROUPS.find(g=>(g.tabs&&g.tabs.some(x=>x[0]===t))||g.direct===t)||NAV_GROUPS[0];}
+function setNavGroup(id){curNavGroup=id;renderNav();}
+function renderNav(){
+  const t1=document.getElementById('navT1');const t2=document.getElementById('navT2');if(!t1||!t2)return;
+  const activeEl=document.querySelector('.tab.active');
+  const activeTab=activeEl?activeEl.id.replace('tab-',''):'tilanne';
+  t1.innerHTML=NAV_GROUPS.map(g=>{
+    const hasActive=g.direct?g.direct===activeTab:g.tabs.some(x=>x[0]===activeTab);
+    const click=g.direct?"showTab('"+g.direct+"')":"setNavGroup('"+g.id+"')";
+    return '<button class="nav-g'+(g.id===curNavGroup?' active':'')+'" onclick="'+click+'">'+g.icon+' '+g.label
+      +(hasActive&&g.id!==curNavGroup?'<span class="nav-dot" title="Avoin välilehti on tässä"></span>':'')+'</button>';
+  }).join('');
+  const grp=NAV_GROUPS.find(g=>g.id===curNavGroup)||NAV_GROUPS[0];
+  if(grp.direct){t2.style.display='none';t2.innerHTML='';}
+  else{t2.style.display='flex';t2.innerHTML=grp.tabs.map(([id,lbl])=>'<button class="nav-tab'+(id===activeTab?' active':'')+'" onclick="showTab(\''+id+'\')">'+lbl+'</button>').join('');}
+}
+function showTab(name){
+  const el=document.getElementById('tab-'+name);if(!el)return;
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('tab-'+name).classList.add('active');
-  if(btn)btn.classList.add('active');
-  update();
+  el.classList.add('active');
+  curNavGroup=groupOfTab(name).id;
+  S.lastTab=name;save(true);
+  renderNav();update();
 }
 function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
 function fmt(n){return(isNaN(n)?0:n).toFixed(2)+' €';}
@@ -1873,6 +1878,7 @@ load();
 const sti=document.getElementById('saldoTili');if(sti&&S.saldoTili)sti.value=S.saldoTili;
 const ska=document.getElementById('saldoKateis');if(ska&&S.saldoKateis)ska.value=S.saldoKateis;
 renderIncome();renderAll();renderRuokaArvio();renderTOTD();
+if(S.lastTab&&document.getElementById('tab-'+S.lastTab)){curNavGroup=groupOfTab(S.lastTab).id;showTab(S.lastTab);}else{renderNav();}
 setTimeout(()=>{_prevXP=calcXP();maybeShowWizard();},300);
 </script>
 </body>
